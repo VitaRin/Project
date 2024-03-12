@@ -50,12 +50,8 @@ export default function SettingsScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#000',
   },
-
-
   logoContainer: {
     alignItems: 'center',
     marginVertical: 20,
@@ -66,7 +62,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   button: {
-    backgroundColor: '#f0f0f0', // Set background color
+    backgroundColor: '#515151', // Set background color
     paddingVertical: 15,
     paddingHorizontal: 10,
     marginHorizontal: 20,
@@ -76,7 +72,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
-    color: '#000', // Set  text color
+    color: '#fff', // Set  text color
   },
   footer: {
     // Add styles for  footer, it may include icons
