@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, Button, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');

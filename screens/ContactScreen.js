@@ -59,7 +59,7 @@ export default function ContactScreen({navigation}) {
   const handleContactAction = (action, contactName) => {
     if (action === 'Start Chat') {
       // Navigate to the ChatScreen with the contactName
-      navigation.navigate('ChatScreen', { contactName });
+      navigation.navigate('Chat');
     }
   };
 
@@ -123,14 +123,17 @@ export default function ContactScreen({navigation}) {
       <View style={styles.navbar}>
         <Button 
           title="Contacts"
+          color="#fff"
            onPress={() => navigation.navigate("Contact")}
         />
         <Button 
           title="Home"
+          color="#fff"
            onPress={() => navigation.navigate("Home")}
         />
         <Button 
           title="Settings"
+          color="#fff"
           onPress={() => navigation.navigate("Settings")}
         />
       </View>
@@ -147,7 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between', 
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#000',
     height: 60, 
     width: '100%',
     position: 'absolute',
@@ -228,5 +231,5 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontWeight: 'bold', 
   },
-
+  
 });
