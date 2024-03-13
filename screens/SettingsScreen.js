@@ -21,7 +21,7 @@ export default function SettingsScreen({navigation}) {
           <Text style={styles.buttonText}>Change Language</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.button}>
           <Text style={styles.buttonText}>Logout</Text>
         </TouchableOpacity>
 

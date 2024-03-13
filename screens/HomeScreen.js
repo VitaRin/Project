@@ -5,19 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text>Aaaaaaaaaa testest</Text>
-      <Button
-        title="Login"
-        onPress={() => navigation.navigate("Login")}
-      />
-      <Button
-        title="Register"
-        onPress={() => navigation.navigate("Register")}
-      />
-      <Button
-        title="Chat"
-        onPress={() => navigation.navigate("Chat")}
-      />
+      
       <View style={styles.navbar}>
         <Button 
           title="Contacts"
