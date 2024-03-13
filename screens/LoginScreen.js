@@ -26,17 +26,17 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Logo or Image at the top */}
-      {/* <Image
-        source={require('path/to/your/logo.png')} // Replace with the actual path or use require for local images
-        style={styles.logo}
-      /> */}
-
+      <Image
+        source={require('../assets/icon.png')} // Replace with the actual path or use require for local images
+        style={styles.logo}/>
+      <Text style = {styles.appText}>Secure Chat</Text>
       {/* Username input */}
       <TextInput
         style={styles.input}
         placeholder="Username"
         onChangeText={(text) => setUsername(text)}
         value={username}
+        placeholderTextColor="#fff" //white text color
       />
 
       {/* Password input */}
@@ -46,10 +46,12 @@ export default function LoginScreen({ navigation }) {
         secureTextEntry={true}
         onChangeText={(text) => setPassword(text)}
         value={password}
+        placeholderTextColor="#fff" //white text color
       />
 
       {/* Login button */}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} 
+        onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
@@ -64,7 +66,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -74,6 +76,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     resizeMode: 'contain',
   },
+
+  AppText: {
+    marginBottom: 10, //adding margin bottom for spacing
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold', // Make text bold
+  },
+
   input: {
     height: 40,
     width: '80%',
