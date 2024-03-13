@@ -1,48 +1,112 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from 'react-native';
-import {  View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import {  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function SettingsScreen({navigation}) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/icon.png')} // logo path
-            style={styles.logo}
-          />
-        </View>
+  const [newUsername, setNewUsername] = useState('');
+  const [isChangingUsername, setIsChangingUsername] = useState(false);
 
-        <TouchableOpacity style={styles.button}>
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      'Warning',
+      'This will delete your account and all your contacts. Do you want to continue?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: async () => {
+            try {
+              // Remove both the username and password from AsyncStorage
+              await AsyncStorage.removeItem('username');
+              await AsyncStorage.removeItem('password');
+              navigation.navigate("Register");
+              // Redirect to the login screen or perform any other desired action
+            } catch (error) {
+              console.error('Error deleting account:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleChangeUsername = async () => {
+    try {
+      // Update the stored username in AsyncStorage with the new value
+      await AsyncStorage.setItem('username', newUsername);
+      setIsChangingUsername(false);
+      // Optionally, display a success message or perform any other desired action
+    } catch (error) {
+      console.error('Error changing username:', error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../assets/icon.png')} // logo path
+          style={styles.logo}
+        />
+      </View>
+
+      {!isChangingUsername && (
+        <TouchableOpacity onPress={() => setIsChangingUsername(true)} style={styles.button}>
           <Text style={styles.buttonText}>Change Username</Text>
         </TouchableOpacity>
+      )}
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Change Language</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.button}>
-          <Text style={styles.buttonText}>Logout</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Delete account</Text>
-        </TouchableOpacity>
-
-        <View style={styles.navbar}>
-          <Button 
-            title="Contacts"
-            onPress={() => navigation.navigate("Contact")}
+      {isChangingUsername && (
+        <View>
+          <TextInput
+            placeholder="New Username"
+            value={newUsername}
+            onChangeText={text => setNewUsername(text)}
           />
-          <Button 
-            title="Home"
-            onPress={() => navigation.navigate("Home")}
+          <Button
+            title="Submit"
+            onPress={handleChangeUsername}
           />
-          <Button 
-            title="Settings"
-            onPress={() => navigation.navigate("Settings")}
+          <Button
+            title="Cancel"
+            onPress={() => setIsChangingUsername(false)}
           />
         </View>
+      )}
+
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Change Language</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.button}>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleDeleteAccount} style={styles.button}>
+        <Text style={styles.buttonText}>Delete account</Text>
+      </TouchableOpacity>
+
+      <View style={styles.navbar}>
+        <Button 
+          title="Contacts"
+          onPress={() => navigation.navigate("Contact")}
+        />
+        <Button 
+          title="Home"
+          onPress={() => navigation.navigate("Home")}
+        />
+        <Button 
+          title="Settings"
+          onPress={() => navigation.navigate("Settings")}
+        />
+      </View>
     </View>
   );
 }

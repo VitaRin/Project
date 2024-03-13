@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, Button, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -15,27 +16,35 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
     // Password validation regex pattern
-    const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{|<])(?=.*\d)[^\s}\/>]{8,}$/;
+    // const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{|<])(?=.*\d)[^\s}\/>]{8,}$/;
 
+    // // Check if the password meets the requirements
+    // if (!passwordRegex.test(password)) {
+    //   Alert.alert('Password Requirements', 'Password must contain at least 1 symbol (!@#$%^&*(),.?:{|<) and 1 numeric character, and be at least 8 characters long. It should not contain "}/> symbols.');
+    //   return;
+    // }
 
-  // Check if the password meets the requirements
-  if (!passwordRegex.test(password)) {
-    Alert.alert('Password Requirements', 'Password must contain at least 1 symbol (!@#$%^&*(),.?:{|<) and 1 numeric character, and be at least 8 characters long. It should not contain "}/> symbols.');
-    return;
-  }
-
-  // Proceed with signup
-  // Replace the following with your actual registration logic
-  // For now, just show an alert with the collected information
-  saveData();
+    // Proceed with signup
+    // Replace the following with your actual registration logic
+    // For now, just show an alert with the collected information
+    // Add a new regex test to ensure that "}/> are not present in the password
+    // If possible, add a regex to make sure that the username also does not contain these characters
+    // and that the username is not an email (anonimity purposes)
+    saveData();
 };
 
 const saveData = async () => {
   try {
-    // Store username and password
-    await AsyncStorage.setItem(username, password);
-    Alert.alert('Registration Successful');
-    navigation.navigate('Home');
+    // Hash the password
+    // console.log(password)
+    // console.log(username)
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    // console.log(hashedPassword)
+    // Store the username and hashed password locally
+    await AsyncStorage.setItem('username', username);
+    await AsyncStorage.setItem('password', password);
+    // Add alert
+    navigation.navigate("Home");
   } catch (error) {
     console.error('Error saving data:', error);
     Alert.alert('Error', 'An error occurred while saving data.');
@@ -129,7 +138,7 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'Helvetica',
+    // fontFamily: 'Helvetica',
   },
   switchContainer: {
     flexDirection: 'row',

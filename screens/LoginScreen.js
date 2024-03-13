@@ -1,27 +1,37 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import bcrypt from 'bcryptjs';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // Implement your login logic here
-    console.log('Username:', username);
-    console.log('Password:', password);
-    if (username === correctUsername && password === correctPassword) {
-      // Successful login, navigate to the Home screen
-      navigation.navigate('Home');
-    } else {
-      // Display an alert for failed login
-      Alert.alert('Invalid Credentials', 'Please check your username OR/AND password.');
+  const handleLogin = async () => {
+    try {
+      // Retrieve stored username and hashed password from AsyncStorage
+      const storedUsername = await AsyncStorage.getItem('username');
+      const storedHashedPassword = await AsyncStorage.getItem('password');
+
+      console.log(storedUsername);
+      console.log(storedHashedPassword);
+
+      // Check if the entered username matches the stored username
+      if (username === storedUsername) {
+        // Compare the entered password with the stored hashed password using bcrypt
+        // const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
+        if (password === storedHashedPassword) {
+          navigation.navigate('Home');
+        } else {
+          // setErrorMessage('Incorrect password');
+        }
+      } else {
+        // setErrorMessage('Username not found');
+      }
+    } catch (error) {
+      console.error('Error retrieving stored credentials:', error);
     }
   };
-
-   const handleSignup = () => {
-      //Implement your signup navigation logic
-      navigation.navigate('Register');
-   };
 
   return (
     <View style={styles.container}>
@@ -56,7 +66,7 @@ export default function LoginScreen({ navigation }) {
       </TouchableOpacity>
 
       {/* Go Back button */}
-      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={styles.goBackText}>Go Back</Text>
       </TouchableOpacity>
     </View>
