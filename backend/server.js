@@ -10,9 +10,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/server.html');
 });
 
-app.post('/', (req, res) => {
-    console.log(req);
-});
 io.on('connection', (socket) => {
     console.log('a user connected');
     socket.on('disconnect', () => {
