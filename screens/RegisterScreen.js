@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import bcrypt from 'bcryptjs';
+// import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -44,7 +44,7 @@ const saveData = async () => {
     await AsyncStorage.setItem('username', username);
     await AsyncStorage.setItem('password', password);
     // Add alert
-    navigation.navigate("Home");
+    navigation.navigate("Main");
   } catch (error) {
     console.error('Error saving data:', error);
     Alert.alert('Error', 'An error occurred while saving data.');
@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#fff',
     fontSize: 14,
-    // fontFamily: 'Helvetica',
   },
   switchContainer: {
     flexDirection: 'row',
