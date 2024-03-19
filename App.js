@@ -9,6 +9,7 @@ import ContactScreen from './screens/ContactScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 
+
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -36,27 +37,31 @@ const App = () => {
   return (
     <>
       {username ? (
+
         <NavigationContainer>
           <Stack.Navigator>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Contact" component={ContactScreen} />
-            <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Contact" component={ContactScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="Chat" component={ChatScreen} />
           </Stack.Navigator>
         </NavigationContainer>
+
       ) : (
+
         <NavigationContainer>
           <Stack.Navigator initialRouteName="Register">
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Contact" component={ContactScreen} />
-            <Stack.Screen name="Settings" component={SettingsScreen} />
-            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Contact" component={ContactScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Chat" component={ChatScreen}  />
           </Stack.Navigator>
         </NavigationContainer>
+
       )}
     </>
   );
