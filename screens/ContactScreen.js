@@ -123,7 +123,7 @@ export default function ContactScreen({navigation}) {
       />
 
 
-      <View style={styles.navbar}>
+      {/* <View style={styles.navbar}>
         <Button 
           title="Contacts"
           color="#fff"
@@ -139,7 +139,7 @@ export default function ContactScreen({navigation}) {
           color="#fff"
           onPress={() => navigation.navigate("Settings")}
         />
-      </View>
+      </View> */}
     </View>
   );
 }

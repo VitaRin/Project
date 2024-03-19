@@ -72,10 +72,10 @@ const renderMessageItem = ({item}) => {
 
     return (
       <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 100}
+        >
          <FlatList
          data={messages}
          keyExtractor={(item) => item.id}
@@ -92,7 +92,6 @@ const renderMessageItem = ({item}) => {
           keyboardType="default"
           onSubmitEditing={handleSend}
           />
-
         </View>
         </KeyboardAvoidingView>
       );

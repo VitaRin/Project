@@ -117,7 +117,7 @@ const renderUserItem = ({ item }) => (
       />
 
     
-      <View style={styles.navbar}>
+      {/* <View style={styles.navbar}>
         <Button 
           title="Contacts"
           color="#fff"
@@ -133,7 +133,7 @@ const renderUserItem = ({ item }) => (
           color="#fff"
           onPress={() => navigation.navigate("Settings")}
         />
-      </View>
+      </View> */}
     </View>
   );
 }

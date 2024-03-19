@@ -4,8 +4,7 @@ import {  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-
-export default function SettingsScreen({navigation}) {
+const SettingsScreen = ({navigation}) => {
   const [newUsername, setNewUsername] = useState('');
   const [isChangingUsername, setIsChangingUsername] = useState(false);
 
@@ -93,8 +92,8 @@ export default function SettingsScreen({navigation}) {
         <Text style={styles.buttonText}>Delete account</Text>
       </TouchableOpacity>
 
-      <View style={styles.navbar}>
-        <Button 
+      {/* <View style={styles.navbar}> */}
+        {/* <Button 
           title="Contacts"
           onPress={() => navigation.navigate("Contact")}
         />
@@ -105,8 +104,8 @@ export default function SettingsScreen({navigation}) {
         <Button 
           title="Settings"
           onPress={() => navigation.navigate("Settings")}
-        />
-      </View>
+        /> */}
+      {/* </View> */}
     </View>
   );
 }
@@ -191,9 +190,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', 
     alignItems: 'center',
     backgroundColor: '#F0F0F0',
-    height: 60, 
     width: '100%',
     position: 'absolute',
     bottom: 0
   }
 });
+
+export default SettingsScreen;
