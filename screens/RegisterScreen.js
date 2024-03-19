@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Encryptor } from "./Encryption";
 // import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
@@ -43,6 +44,8 @@ const saveData = async () => {
     // Store the username and hashed password locally
     await AsyncStorage.setItem('username', username);
     await AsyncStorage.setItem('password', password);
+    //generate and store the public key and private key
+    await Encryptor.generateAndStoreKey();
     // Add alert
     navigation.navigate("Main");
   } catch (error) {

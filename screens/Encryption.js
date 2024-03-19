@@ -51,3 +51,5 @@ export class Encryption{
         }
     }
 }
+
+export const Encryptor = new Encryption();
