@@ -34,6 +34,7 @@ export default function RegisterScreen({ navigation }) {
     saveData();
 };
 
+  let message = "my secret message";
 const saveData = async () => {
   try {
     // Hash the password
