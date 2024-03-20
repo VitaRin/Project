@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Encryptor} from "./Encryption";
 // import bcrypt from 'bcryptjs';
 
 export default function LoginScreen({ navigation }) {
@@ -12,7 +13,8 @@ export default function LoginScreen({ navigation }) {
       // Retrieve stored username and hashed password from AsyncStorage
       const storedUsername = await AsyncStorage.getItem('username');
       const storedHashedPassword = await AsyncStorage.getItem('password');
-
+      //Hash the input password
+      const hashedPassword = await Encryptor.hash(password);
       console.log(storedUsername);
       console.log(storedHashedPassword);
 
@@ -20,7 +22,8 @@ export default function LoginScreen({ navigation }) {
       if (username === storedUsername) {
         // Compare the entered password with the stored hashed password using bcrypt
         // const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
-        if (password === storedHashedPassword) {
+
+        if (hashedPassword === storedHashedPassword) {
           navigation.navigate("Main");
         } else {
           // setErrorMessage('Incorrect password');

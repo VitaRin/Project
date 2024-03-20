@@ -40,11 +40,12 @@ const saveData = async () => {
     // Hash the password
     // console.log(password)
     // console.log(username)
+    let hashedPassword = await Encryptor.hash(password);
     // const hashedPassword = await bcrypt.hash(password, 10);
     // console.log(hashedPassword)
     // Store the username and hashed password locally
     await AsyncStorage.setItem('username', username);
-    await AsyncStorage.setItem('password', password);
+    await AsyncStorage.setItem('password', hashedPassword);
     await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
     console.log(biometricsEnabled.toString());
     //generate and store the public key and private key
