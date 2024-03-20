@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect , useEffect} from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -9,28 +9,32 @@ import {
   TextInput, 
   StatusBar,
   Button,
+  Modal,
  } from 'react-native';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const contactsData = [
-  { id: '1', name: 'Ray' },
-  { id: '2', name: 'Apple' },
-  { id: '3', name: 'Harry' },
-  { id: '4', name: 'Cristiano' },
-  { id: '5', name: 'Jessica' },
-  { id: '6', name: 'Booob' },
-  { id: '7', name: 'NightWhite' },
-];
+
+const STORAGE_KEY = '@contacts';
 
 
 // grouped by first letter
-const processContactsData = (contacts) => {
-  const sortedContacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
+const processContactsData = (contacts, query) => {
+  if (!contacts) {
+    console.error('processContactsData was called with undefined contacts');
+    return [];
+  }
+  const lowercasedQuery = query.toLowerCase();
+  const filteredContacts = query ? contacts.filter(contact =>
+    contact.name.toLowerCase().includes(lowercasedQuery)
+  ) : contacts;
+
+  const sortedContacts = filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
   const groupedContacts = [];
   let currentLetter = '';
 
   sortedContacts.forEach(contact => {
-    if (contact.name[0] !== currentLetter) {
-      currentLetter = contact.name[0];
+    if (contact.name[0].toUpperCase() !== currentLetter) {
+      currentLetter = contact.name[0].toUpperCase();
       groupedContacts.push({
         title: currentLetter,
         data: []
@@ -42,30 +46,117 @@ const processContactsData = (contacts) => {
   return groupedContacts;
 };
 
+
 export default function ContactScreen({navigation}) {
 
-  const [searchQuery, setSearchQuery] = useState('');
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerStyle: {
-        backgroundColor: '#000', 
-      },
-      headerTintColor: '#fff', 
-      
-    });
-  }, [navigation]);
-  
-  const handleSearch = (query) => {
-    setSearchQuery(query);
+const [contacts, setContacts] = useState([]);
+const [searchQuery, setSearchQuery] = useState('');
+const [isAddModalVisible, setAddModalVisible] = useState(false);
+const [newContactName, setNewContactName] = useState('');
+const [isEditMode, setIsEditMode] = useState(false); 
+const [editingContactId, setEditingContactId] = useState(null);
+
+
+
+
+useLayoutEffect(() => {
+  navigation.setOptions({
+    headerStyle: {
+      backgroundColor: '#000', 
+    },
+    headerTintColor: '#fff', 
+    
+  });
+}, [navigation]);
+
+const handleSearch = (query) => {
+  setSearchQuery(query);
+};
+
+
+
+  useEffect(() => {
+    const loadContacts = async () => {
+      try {
+        const storedContacts = await AsyncStorage.getItem(STORAGE_KEY);
+        if (storedContacts) {
+          setContacts(JSON.parse(storedContacts));
+        }
+      } catch (e) {
+        console.error('Failed to load contacts.', e);
+      }
+    };
+
+    loadContacts();
+  }, []);
+
+
+  const saveContacts = async (updatedContacts) => {
+    try {
+      const jsonValue = JSON.stringify(updatedContacts);
+      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+    } catch (e) {
+      console.error('Failed to save contacts to storage', e);
+    }
   };
 
   // Function to handle the selection from the contact action menu
   const handleContactAction = (action, userName) => {
     if (action === 'Start Chat') {
-      // Navigate to the ChatScreen with the contactName
       navigation.navigate('Chat', {userName: userName});
     }
   };
+
+
+  //add
+  const handleAddNewContact = () => {
+    if (newContactName.trim()) {
+      if (!contacts.some(contact => contact.name.toLowerCase() === newContactName.toLowerCase())) {
+        const newContact = { id: Date.now().toString(), name: newContactName.trim() };
+        const newContacts = [...contacts, newContact];
+        setContacts(newContacts);
+        saveContacts(newContacts); // save new contacts
+        setNewContactName('');
+        setAddModalVisible(false);
+      } else {
+        Alert.alert('Error', 'A contact with this name already exists.');
+      }
+    } else {
+      Alert.alert('Error', 'Contact name cannot be empty.');
+    }
+  };
+  
+
+//remove
+  const removeContact = (contactId) => {
+    const updatedContacts = contacts.filter(contact => contact.id !== contactId);
+    setContacts(updatedContacts); 
+    saveContacts(updatedContacts);
+  };
+
+
+//edit
+  const handleEditContact = (contactId, newName) => {
+    const updatedContacts = contacts.map(contact =>
+      contact.id === contactId ? { ...contact, name: newName } : contact
+    );
+    setContacts(updatedContacts); 
+    saveContacts(updatedContacts); 
+
+    setAddModalVisible(false);
+    setIsEditMode(false);
+    setEditingContactId(null);
+    setNewContactName('');
+  };
+
+  // show the edit one 
+  const showEditContactModal = (contact) => {
+    setIsEditMode(true);
+    setEditingContactId(contact.id);
+    setNewContactName(contact.name);
+    setAddModalVisible(true);
+  };
+
 
   // Function to show the contact action menu
   const showContactActionMenu = (contact) => {
@@ -74,31 +165,60 @@ export default function ContactScreen({navigation}) {
       "Choose an action for this contact:",
       [
         { text: 'Start Chat', onPress: () => handleContactAction('Start Chat', contact.name) },
-        { text: 'Remove', onPress: () => handleContactAction('Remove', contact.name) },
-        { text: 'Edit', onPress: () => handleContactAction('Edit', contact.name) },
+        { text: 'Remove', onPress: () => removeContact(contact.id) },
+        { text: 'Edit', onPress: () => showEditContactModal(contact) },
         { text: 'Cancel', style: 'cancel' },
       ],
       { cancelable: true }
     );
   };
 
-  // Render each contact in the FlatList
-  // const renderContactItem = ({ item }) => (
-  //   <View style={styles.contactItem}>
-  //     <Text style={styles.contactName}>{item.name}</Text>
-  //     {/* <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.infoButton}>
-  //       <Text style={styles.infoButtonText}>💬</Text>
-  //     </TouchableOpacity> */}
-  //   </View>
-  // );
 
   return (
     <View style={styles.container}>
       
       <StatusBar barStyle="light-content" />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isAddModalVisible}
+        onRequestClose={() => {
+          setAddModalVisible(!isAddModalVisible);
+        }}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter name..."
+              onChangeText={setNewContactName}
+              value={newContactName}
+            />
+            <Button
+              title={isEditMode ? "Save Changes" : "Add Contact"}
+              onPress={() => {
+                if (isEditMode) {
+                  handleEditContact(editingContactId, newContactName);
+                } else {
+                  handleAddNewContact();
+                }
+              }}
+            />
+            <Button
+              title="Cancel"
+              color="#ff5c5c"
+              onPress={() => {
+                setAddModalVisible(false);
+                setNewContactName('');
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
       <View style={styles.header}>
         <Text style={styles.title}>Contacts</Text>
-        <TouchableOpacity style={styles.addIcon} onPress={() => {/* handle add contact */}}>
+        <TouchableOpacity
+          style={styles.addIcon}
+          onPress={() => setAddModalVisible(true)}>
           <Text style={styles.addIconText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -110,7 +230,7 @@ export default function ContactScreen({navigation}) {
         onChangeText={handleSearch}
       />
       <SectionList
-        sections={processContactsData(contactsData)} 
+        sections={processContactsData(contacts, searchQuery)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.contactItem}>
@@ -121,25 +241,6 @@ export default function ContactScreen({navigation}) {
           <Text style={styles.sectionHeader}>{title}</Text>
         )}
       />
-
-
-      {/* <View style={styles.navbar}>
-        <Button 
-          title="Contacts"
-          color="#fff"
-           onPress={() => navigation.navigate("Contact")}
-        />
-        <Button 
-          title="Home"
-          color="#fff"
-           onPress={() => navigation.navigate("Home")}
-        />
-        <Button 
-          title="Settings"
-          color="#fff"
-          onPress={() => navigation.navigate("Settings")}
-        />
-      </View> */}
     </View>
   );
 }
@@ -147,7 +248,7 @@ export default function ContactScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#1F1F1F',
   },
   navbar: {
     flexDirection: 'row',
@@ -212,7 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#000', 
+    backgroundColor: '#1F1F1F', 
   },
   title: {
     color: '#fff',
@@ -224,7 +325,7 @@ const styles = StyleSheet.create({
   },
   addIconText: {
     color: '#fff',
-    fontSize: 24, // Increase size if necessary
+    fontSize: 24,
     fontWeight: 'bold',
   },
   sectionHeader: {
@@ -235,5 +336,23 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontWeight: 'bold', 
   },
-  
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    padding: 35,
+    alignItems: 'center',
+  },
+  modalInput: {
+    width: '80%',
+    borderBottomWidth: 1,
+    padding: 10,
+    marginBottom: 20,
+  },
 });

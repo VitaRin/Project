@@ -18,14 +18,15 @@ export default function ChatScreen({route, navigation}) {
   
 
   const handleKillChat = () => {
-    // 告诉HomeScreen要删除这个用户的聊天
     navigation.navigate('Home', { deleteChat: userName });
   };
 
 
   useLayoutEffect(() => {
     navigation.setOptions({
+    
       title: userName,
+      headerTitleAlign: 'center',
       headerStyle: {
         backgroundColor: '#141414', 
       },
@@ -34,18 +35,22 @@ export default function ChatScreen({route, navigation}) {
         fontWeight: 'bold',
       },
       headerLeft: () => (
-        <Button
+     <Button
         onPress={() => navigation.navigate('Home', { newChat: userName })}
-          title="Home"
-          color="#fff"
+          title="< Home"
+          color={Platform.OS == "ios" ? "#fff" : "#111"}
         />
+      
       ),
       headerRight: () => (
-        <Button
-        onPress={handleKillChat}
-        title="Kill"
-        color="#FF0000"
-      />),
+      <View  style={{ paddingRight: 15 }}>
+        <Button 
+         marginRight='5'
+         onPress={handleKillChat}
+         title="Kill"
+         color="#FF0000"
+        />
+      </View>),
 
     });
   }, [navigation, userName]);
