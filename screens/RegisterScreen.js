@@ -45,6 +45,8 @@ const saveData = async () => {
     // Store the username and hashed password locally
     await AsyncStorage.setItem('username', username);
     await AsyncStorage.setItem('password', password);
+    await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
+    console.log(biometricsEnabled.toString());
     //generate and store the public key and private key
     await Encryptor.generateAndStoreKey();
     // Add alert
@@ -89,6 +91,8 @@ const saveData = async () => {
         <Switch
           value={biometricsEnabled}
           onValueChange={(value) => setBiometricsEnabled(value)}
+          trackColor={{false: "#767577", true: "#81b0ff"}}
+          thumbColor={(biometricsEnabled ? "#f5dd4b" : "#f4f3f4")}
         />
      </View>
      {/* Register button */}

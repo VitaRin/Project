@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'react-native';
 import {  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SettingsScreen = ({navigation}) => {
   const [newUsername, setNewUsername] = useState('');
   const [isChangingUsername, setIsChangingUsername] = useState(false);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(); // Remove default state
+
+  useEffect(() => {
+    // Load biometric preference from AsyncStorage when the component mounts
+    loadBiometricPreference();
+  }, []);
+
+  
 
   const handleDeleteAccount = async () => {
     Alert.alert(
@@ -47,6 +55,28 @@ const SettingsScreen = ({navigation}) => {
     }
   };
 
+  const loadBiometricPreference = async () => {
+    try {
+      const bioState = await AsyncStorage.getItem('biometricsEnabled');
+      if (bioState !== null) {
+        setBiometricsEnabled(bioState === 'true');
+      }
+    } catch (error) {
+      console.error('Error loading biometric preference:', error);
+    }
+  };
+
+  const handleChangeBiometrics = async () => {
+    try {
+      setBiometricsEnabled(!biometricsEnabled);
+      // If user is trying to ENABLE biometrics, check if their device is compatible (has sensors)
+      // And if the user has a registered fingerprint (same in register)
+      await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
+    } catch (error) {
+      console.error('Error changing biometric preference:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -84,6 +114,10 @@ const SettingsScreen = ({navigation}) => {
         <Text style={styles.buttonText}>Change Language</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={handleChangeBiometrics} style={styles.button}>
+        <Text style={styles.buttonText}>{biometricsEnabled ? 'Disable Biometrics' : 'Enable Biometrics'}</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.button}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
@@ -92,20 +126,6 @@ const SettingsScreen = ({navigation}) => {
         <Text style={styles.buttonText}>Delete account</Text>
       </TouchableOpacity>
 
-      {/* <View style={styles.navbar}> */}
-        {/* <Button 
-          title="Contacts"
-          onPress={() => navigation.navigate("Contact")}
-        />
-        <Button 
-          title="Home"
-          onPress={() => navigation.navigate("Home")}
-        />
-        <Button 
-          title="Settings"
-          onPress={() => navigation.navigate("Settings")}
-        /> */}
-      {/* </View> */}
     </View>
   );
 }
