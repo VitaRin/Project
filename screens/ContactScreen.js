@@ -14,7 +14,11 @@ import {
 const contactsData = [
   { id: '1', name: 'Ray' },
   { id: '2', name: 'Apple' },
-  { id: '3', name: 'Cris' },
+  { id: '3', name: 'Harry' },
+  { id: '4', name: 'Cristiano' },
+  { id: '5', name: 'Jessica' },
+  { id: '6', name: 'Booob' },
+  { id: '7', name: 'NightWhite' },
 ];
 
 
@@ -56,10 +60,10 @@ export default function ContactScreen({navigation}) {
   };
 
   // Function to handle the selection from the contact action menu
-  const handleContactAction = (action, contactName) => {
+  const handleContactAction = (action, userName) => {
     if (action === 'Start Chat') {
       // Navigate to the ChatScreen with the contactName
-      navigation.navigate('Chat');
+      navigation.navigate('Chat', {userName: userName});
     }
   };
 
@@ -79,14 +83,14 @@ export default function ContactScreen({navigation}) {
   };
 
   // Render each contact in the FlatList
-  const renderContactItem = ({ item }) => (
-    <View style={styles.contactItem}>
-      <Text style={styles.contactName}>{item.name}</Text>
-      <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.infoButton}>
-        <Text style={styles.infoButtonText}>💬</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  // const renderContactItem = ({ item }) => (
+  //   <View style={styles.contactItem}>
+  //     <Text style={styles.contactName}>{item.name}</Text>
+  //     {/* <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.infoButton}>
+  //       <Text style={styles.infoButtonText}>💬</Text>
+  //     </TouchableOpacity> */}
+  //   </View>
+  // );
 
   return (
     <View style={styles.container}>
@@ -110,8 +114,7 @@ export default function ContactScreen({navigation}) {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.contactItem}>
-            <Text style={styles.contactName}>{item.name}</Text>
-            {/* <Text style={styles.infoButtonText}>💬</Text> */}
+            <Text style={styles.userName}>{item.name}</Text>
           </TouchableOpacity>
         )}
         renderSectionHeader={({ section: { title } }) => (
@@ -120,7 +123,7 @@ export default function ContactScreen({navigation}) {
       />
 
 
-      <View style={styles.navbar}>
+      {/* <View style={styles.navbar}>
         <Button 
           title="Contacts"
           color="#fff"
@@ -136,7 +139,7 @@ export default function ContactScreen({navigation}) {
           color="#fff"
           onPress={() => navigation.navigate("Settings")}
         />
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -192,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  contactName: {
+  userName: {
     fontSize: 18,
     color: '#fff'
   },
@@ -205,6 +208,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    marginTop: 40,
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,

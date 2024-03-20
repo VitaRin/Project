@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import bcrypt from 'bcryptjs';
+import { Encryptor } from "./Encryption";
+// import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -33,6 +34,7 @@ export default function RegisterScreen({ navigation }) {
     saveData();
 };
 
+  let message = "my secret message";
 const saveData = async () => {
   try {
     // Hash the password
@@ -43,8 +45,12 @@ const saveData = async () => {
     // Store the username and hashed password locally
     await AsyncStorage.setItem('username', username);
     await AsyncStorage.setItem('password', password);
+    await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
+    console.log(biometricsEnabled.toString());
+    //generate and store the public key and private key
+    await Encryptor.generateAndStoreKey();
     // Add alert
-    navigation.navigate("Home");
+    navigation.navigate("Main");
   } catch (error) {
     console.error('Error saving data:', error);
     Alert.alert('Error', 'An error occurred while saving data.');
@@ -85,6 +91,8 @@ const saveData = async () => {
         <Switch
           value={biometricsEnabled}
           onValueChange={(value) => setBiometricsEnabled(value)}
+          trackColor={{false: "#767577", true: "#81b0ff"}}
+          thumbColor={(biometricsEnabled ? "#f5dd4b" : "#f4f3f4")}
         />
      </View>
      {/* Register button */}
@@ -138,7 +146,6 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#fff',
     fontSize: 14,
-    // fontFamily: 'Helvetica',
   },
   switchContainer: {
     flexDirection: 'row',

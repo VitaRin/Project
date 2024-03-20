@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import bcrypt from 'bcryptjs';
+// import bcrypt from 'bcryptjs';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -21,7 +21,7 @@ export default function LoginScreen({ navigation }) {
         // Compare the entered password with the stored hashed password using bcrypt
         // const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
         if (password === storedHashedPassword) {
-          navigation.navigate('Home');
+          navigation.navigate("Main");
         } else {
           // setErrorMessage('Incorrect password');
         }
@@ -97,10 +97,12 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     width: '80%',
-    borderColor: 'gray',
+    borderColor: '#fff',
     borderWidth: 1,
     marginBottom: 20,
     padding: 10,
+    color: '#fff',
+    fontSize: 14,
   },
   button: {
     backgroundColor: 'blue',
