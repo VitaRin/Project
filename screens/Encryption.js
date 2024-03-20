@@ -1,5 +1,7 @@
 import forge from 'node-forge';
-import { JSHash, JSHmac, CONSTANTS } from "react-native-hash";
+import { JSHash, CONSTANTS } from "react-native-hash";
+import Aes from 'react-native-aes-crypto';
+import CryptoJS from "react-native-crypto-js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class Encryption {
@@ -22,25 +24,40 @@ export class Encryption {
         }
     }
 
+    async generateSessionKey(){
+        try {
+            //Get user's password
+            const password = await AsyncStorage.getItem('password');
+            //Get time as salt
+            const time = new Date().toTimeString();
+            //Generate the session key by Aes.pbkdf2(password, salt, cost, length)
+            const sessionKey =  await Aes.pbkdf2(password, time, 5000, 256);
+            console.log('The session key is:', sessionKey);
+            return sessionKey;
+        }catch (error){
+            console.error('ERROR IN GENERATE SESSION KEY: ', error);
+        }
+
+    }
 
     //Original version of encrypting messages
-    async encryptMessage(message){
+    async encryptRSA(input){
         try {
             const publicKeyPem = await AsyncStorage.getItem('publicKey');
             //return (publicKeyPem, message) => { const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);}
-            const Encrypt = (publicKeyPem, message) => {
+            const Encrypt = (publicKeyPem, input) => {
                 //Extract the public key from Pem
                 const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);
-                const cipher = publicKey.encrypt(message, 'RSA-OAEP', {
+                const cipher = publicKey.encrypt(input, 'RSA-OAEP', {
                     md: forge.md.sha256.create(),
                     mgf1: { md: forge.md.sha256.create(), },
                 });
                 //Encode the cipher with Base64
                 return forge.util.encode64(cipher);
             };
-            return Encrypt(publicKeyPem, message);
+            return Encrypt(publicKeyPem, input);
         }catch (error){
-            console.error('ERROR WHEN ENCRYPTING MESSAGE: ', error);
+            console.error('ERROR WHEN RSA ENCRYPTION: ', error);
             return null;
         }
     }
@@ -48,42 +65,60 @@ export class Encryption {
 
     //Formal version of encrypting messages with a specific user's public key
     /*
-    async encryptMessage(message, uid){
+    async encryptRSA(input, uid){
         try {
             const publicKeyPem = await AsyncStorage.getItem(uid);
-            const Encrypt = (publicKeyPem, message) => {
+            const Encrypt = (publicKeyPem, input) => {
                 const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);
-                const cipher = publicKey.encrypt(message, 'RSA-OAEP', {
+                const cipher = publicKey.encrypt(input, 'RSA-OAEP', {
                     md: forge.md.sha256.create(),
                     mgf1: { md: forge.md.sha256.create(), },
                 });
                 return forge.util.encode64(cipher);
             };
-            return Encrypt(publicKeyPem, message);
+            return Encrypt(publicKeyPem, input);
         }catch (error){
-            console.error('ERROR WHEN ENCRYPTING MESSAGE', error);
+            console.error('ERROR WHEN RSA ENCRYPTION: ', error);
             return null;
         }
     }
     * */
 
 
-    async decryptMessage(encryptedMessage){
+    async decryptRSA(encryptedInput){
         try{
             const privateKeyPem = await AsyncStorage.getItem('privateKey');
-            const Decrypt = (privateKeyPem, encryptedMessage) => {
+            const Decrypt = (privateKeyPem, encryptedInput) => {
                 //Extract the private key from Pem
                 const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
                 //Decode the cipher with Base64
-                const encrypted = forge.util.decode64(encryptedMessage);
+                const encrypted = forge.util.decode64(encryptedInput);
                 return privateKey.decrypt(encrypted, 'RSA-OAEP', {
                     md: forge.md.sha256.create(),
                     mgf1: { md: forge.md.sha256.create(), },
                 });
             };
-            return Decrypt(privateKeyPem, encryptedMessage);
+            return Decrypt(privateKeyPem, encryptedInput);
         }catch (error){
-            console.error('ERROR WHEN DECRYPTING MESSAGE: ', error);
+            console.error('ERROR WHEN RSA DECRYPTION: ', error);
+            return null;
+        }
+    }
+
+    async encryptAES(message, key){
+        try {
+            return CryptoJS.AES.encrypt(message, key).toString();
+        }catch (error){
+            console.log('ERROR WHEN AES ENCRYPTION: ', error);
+            return null;
+        }
+    }
+
+    async decryptAES(message, key){
+        try {
+            return CryptoJS.AES.decrypt(message, key).toString();
+        }catch (error){
+            console.log('ERROR WHEN AES DECRYPTION: ', error);
             return null;
         }
     }
