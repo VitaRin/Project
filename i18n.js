@@ -1,10 +1,10 @@
 // i18n.js
 import { I18n } from "i18n-js";
-import * as Localization from "expo-localization";
+// import * as Localization from "expo-localization";
 
 const translations = {
   en: {
-    welcome: "Welcome to Mischief Managed",
+    welcome: "Welcome to GhostChat",
     username: "Username",
     password: "Password",
     confirmpassword: "Confirm Password",
@@ -35,11 +35,10 @@ const translations = {
     no: "No",
     newUsernamePlaceholder: "Please enter a new username",
     activechat: "Active Chat",
-    welcome: "Welcome to Mischief Managed",
   },
 
   zh: {
-    welcome: "Welcome to Mischief Managed",
+    welcome: "欢迎来到GhostChat",
     username: "用户名",
     password: "密码",
     confirmpassword: "确认密码",
@@ -69,7 +68,6 @@ const translations = {
     no: "否",
     newUsernamePlaceholder: "请输入新的用户名",
     activechat: "当前聊天",
-    welcome: "欢迎来到Mischief Managed",
   },
 };
 

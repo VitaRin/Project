@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect , useEffect} from 'react';
+import React, { useState, useLayoutEffect, useEffect} from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -12,7 +12,8 @@ import {
   Modal,
  } from 'react-native';
  import AsyncStorage from '@react-native-async-storage/async-storage';
-
+ import { LanguageContext } from "./LanguageProvider";
+ import i18n from "../i18n.js";
 
 const STORAGE_KEY = '@contacts';
 
@@ -46,7 +47,6 @@ const processContactsData = (contacts, query) => {
   return groupedContacts;
 };
 
-
 export default function ContactScreen({navigation}) {
 
 const [contacts, setContacts] = useState([]);
@@ -55,9 +55,6 @@ const [isAddModalVisible, setAddModalVisible] = useState(false);
 const [newContactName, setNewContactName] = useState('');
 const [isEditMode, setIsEditMode] = useState(false); 
 const [editingContactId, setEditingContactId] = useState(null);
-
-
-
 
 useLayoutEffect(() => {
   navigation.setOptions({
@@ -72,8 +69,6 @@ useLayoutEffect(() => {
 const handleSearch = (query) => {
   setSearchQuery(query);
 };
-
-
 
   useEffect(() => {
     const loadContacts = async () => {

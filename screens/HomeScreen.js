@@ -1,4 +1,4 @@
-import React , { useState, useEffect, useLayoutEffect } from 'react';
+import React , { useState, useEffect, useLayoutEffect, useContext } from 'react';
 import { StyleSheet,
    Text, 
    View, 
@@ -8,15 +8,15 @@ import { StyleSheet,
    Image,
    StatusBar,
    FlatList } from 'react-native';
-   import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LanguageContext } from "./LanguageProvider";
+import i18n from "../i18n.js";
 
 
 const STORAGE_KEY = 'activeChats';
 export default function HomeScreen({ navigation, route }) {
-
-
   const [activeChats, setActiveChats] = useState([]);
-
+  const { locale } = useContext(LanguageContext);
  
  // 从AsyncStorage加载聊天数据
  const loadChatsFromStorage = async () => {
@@ -100,13 +100,13 @@ const renderUserItem = ({ item }) => (
   return (
     <View style={styles.container}>
        <Image
-        source={require('../assets/logo.png')} 
+        source={require('../assets/ghost.png')} 
         style={styles.image}
       />
      
      <StatusBar barStyle="light-content" />
      <View style={styles.header}>
-     <Text style={styles.title}>Active Chat</Text>
+     <Text style={styles.title}>{i18n.t("activechat")}</Text>
      </View>
       
       <FlatList
@@ -115,25 +115,6 @@ const renderUserItem = ({ item }) => (
         renderItem={renderUserItem}
         style={styles.userList}
       />
-
-    
-      {/* <View style={styles.navbar}>
-        <Button 
-          title="Contacts"
-          color="#fff"
-           onPress={() => navigation.navigate("Contact")}
-        />
-        <Button 
-          title="Home"
-          color="#fff"
-           onPress={() => navigation.navigate("Home")}
-        />
-        <Button 
-          title="Settings"
-          color="#fff"
-          onPress={() => navigation.navigate("Settings")}
-        />
-      </View> */}
     </View>
   );
 }

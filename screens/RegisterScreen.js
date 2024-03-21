@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Encryptor } from "./Encryption";
+import { LanguageContext } from "./LanguageProvider";
 // import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
@@ -61,19 +62,19 @@ const saveData = async () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/icon.png')} // Replace with the actual path or use require for local images
+        source={require('../assets/ghost.png')} // Replace with the actual path or use require for local images
         style={styles.logo}/>
-      <Text style = {styles.signupText}>Welcome to Mischief Managed</Text>
+      <Text style = {styles.signupText}>{i18n.t("welcome")}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder={i18n.t("username")}
         value={username}
         onChangeText={(text) => setUsername(text)}
         placeholderTextColor="#fff" //white text color
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={i18n.t("password")}
         secureTextEntry={true}
         value={password}
         onChangeText={(text) => setPassword(text)}
@@ -81,14 +82,14 @@ const saveData = async () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Confirm Password"
+        placeholder={i18n.t("confirmpassword")}
         secureTextEntry={true}
         value={confirmPassword}
         onChangeText={(text) => setConfirmPassword(text)}
         placeholderTextColor="#fff" //white text color
       />
       <View style={styles.switchContainer}>
-        <Text style={styles.enableBiometricsText}>Enable Biometrics</Text>
+        <Text style={styles.enableBiometricsText}>{i18n.t("enablebiometrics")}</Text>
         <Switch
           value={biometricsEnabled}
           onValueChange={(value) => setBiometricsEnabled(value)}
@@ -99,12 +100,12 @@ const saveData = async () => {
      {/* Register button */}
      <TouchableOpacity style={styles.button} 
         onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+        <Text style={styles.buttonText}>{i18n.t("register")}</Text>
       </TouchableOpacity>
 
       {/* Go Back button */}
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.goBackText}>Go Back to Login</Text>
+        <Text style={styles.goBackText}>{i18n.t("goToLogin")}</Text>
       </TouchableOpacity>
     </View>
   );

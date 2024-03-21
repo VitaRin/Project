@@ -10,6 +10,7 @@ import ContactScreen from './screens/ContactScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainTabNavigator from './screens/TabNavigator';
+import { LanguageProvider } from "./screens/LanguageProvider";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,27 +38,29 @@ const App = () => {
   }
 
   return (
-    <>
-      {username ? (
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
-            <Stack.Screen name="Chat" component={ChatScreen} /> 
-          </Stack.Navigator>
-        </NavigationContainer>
-      ) : (
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Register">
-            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
-            <Stack.Screen name="Chat" component={ChatScreen} /> 
-          </Stack.Navigator>
-        </NavigationContainer>
-      )}
-    </>
+    <LanguageProvider>
+      <>
+        {username ? (
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
+              <Stack.Screen name="Chat" component={ChatScreen} /> 
+            </Stack.Navigator>
+          </NavigationContainer>
+        ) : (
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName="Register">
+              <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
+              <Stack.Screen name="Chat" component={ChatScreen} /> 
+            </Stack.Navigator>
+          </NavigationContainer>
+        )}
+      </>
+    </LanguageProvider>
   );
 };
 

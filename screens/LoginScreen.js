@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Encryptor} from "./Encryption";
+import { LanguageContext } from "./LanguageProvider";
+import i18n from "../i18n.js";
 // import bcrypt from 'bcryptjs';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { locale } = useContext(LanguageContext);
 
   const handleLogin = async () => {
     try {
@@ -40,7 +43,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       {/* Logo or Image at the top */}
       <Image
-        source={require('../assets/icon.png')} // Replace with the actual path or use require for local images
+        source={require('../assets/ghost.png')} // Replace with the actual path or use require for local images
         style={styles.logo}/>
       <Text style = {styles.appText}>Secure Chat</Text>
       {/* Username input */}
@@ -65,7 +68,7 @@ export default function LoginScreen({ navigation }) {
       {/* Login button */}
       <TouchableOpacity style={styles.button} 
         onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>{i18n.t("login")}</Text>
       </TouchableOpacity>
 
       {/* Go Back button */}

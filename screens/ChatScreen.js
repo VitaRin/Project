@@ -10,8 +10,6 @@ import {
   Platform
 } from 'react-native';
 
-
-
 export default function ChatScreen({route, navigation}) {
 
   const {userName} = route.params;
