@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Encryptor } from "./Encryption";
 import { LanguageContext } from "./LanguageProvider";
+import i18n from "../i18n.js";
 // import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
@@ -10,6 +11,9 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+
 
   const handleRegister = async () => {
     // For now, just show an alert with the collected information
@@ -37,6 +41,7 @@ export default function RegisterScreen({ navigation }) {
 
   let message = "my secret message";
 const saveData = async () => {
+  setLoading(true);
   try {
     // Hash the password
     // console.log(password)
@@ -50,12 +55,16 @@ const saveData = async () => {
     await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
     console.log(biometricsEnabled.toString());
     //generate and store the public key and private key
+    
     await Encryptor.generateAndStoreKey();
+    
     // Add alert
     navigation.navigate("Main");
   } catch (error) {
     console.error('Error saving data:', error);
     Alert.alert('Error', 'An error occurred while saving data.');
+  } finally{
+    setLoading(false);
   }
 };
 
@@ -96,12 +105,21 @@ const saveData = async () => {
           trackColor={{false: "#767577", true: "#81b0ff"}}
           thumbColor={(biometricsEnabled ? "#f5dd4b" : "#f4f3f4")}
         />
-     </View>
+     </View >
+
      {/* Register button */}
-     <TouchableOpacity style={styles.button} 
-        onPress={handleRegister}>
+      {loading && (
+      <View style={styles.fullScreenLoader}>
+        <ActivityIndicator style={styles.indicator} />
+      </View>
+    )}
+
+    {!loading && (
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>{i18n.t("register")}</Text>
       </TouchableOpacity>
+    )}
+     
 
       {/* Go Back button */}
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -167,5 +185,21 @@ const styles = StyleSheet.create({
   goBackText: {
     marginTop: 20,
     color: 'blue',
+  },
+  indicator: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
+  fullScreenLoader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 1, 
   },
 });

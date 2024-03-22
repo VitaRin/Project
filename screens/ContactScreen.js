@@ -34,14 +34,16 @@ const processContactsData = (contacts, query) => {
   let currentLetter = '';
 
   sortedContacts.forEach(contact => {
-    if (contact.name[0].toUpperCase() !== currentLetter) {
+    if (contact.name && contact.name[0].toUpperCase() !== currentLetter) {
       currentLetter = contact.name[0].toUpperCase();
       groupedContacts.push({
         title: currentLetter,
         data: []
       });
     }
+    if(contact.name){
     groupedContacts[groupedContacts.length - 1].data.push(contact);
+    }
   });
 
   return groupedContacts;
@@ -53,8 +55,8 @@ const [contacts, setContacts] = useState([]);
 const [searchQuery, setSearchQuery] = useState('');
 const [isAddModalVisible, setAddModalVisible] = useState(false);
 const [newContactName, setNewContactName] = useState('');
-const [isEditMode, setIsEditMode] = useState(false); 
-const [editingContactId, setEditingContactId] = useState(null);
+
+
 
 useLayoutEffect(() => {
   navigation.setOptions({
@@ -130,27 +132,7 @@ const handleSearch = (query) => {
   };
 
 
-//edit
-  const handleEditContact = (contactId, newName) => {
-    const updatedContacts = contacts.map(contact =>
-      contact.id === contactId ? { ...contact, name: newName } : contact
-    );
-    setContacts(updatedContacts); 
-    saveContacts(updatedContacts); 
 
-    setAddModalVisible(false);
-    setIsEditMode(false);
-    setEditingContactId(null);
-    setNewContactName('');
-  };
-
-  // show the edit one 
-  const showEditContactModal = (contact) => {
-    setIsEditMode(true);
-    setEditingContactId(contact.id);
-    setNewContactName(contact.name);
-    setAddModalVisible(true);
-  };
 
 
   // Function to show the contact action menu
@@ -161,7 +143,6 @@ const handleSearch = (query) => {
       [
         { text: 'Start Chat', onPress: () => handleContactAction('Start Chat', contact.name) },
         { text: 'Remove', onPress: () => removeContact(contact.id) },
-        { text: 'Edit', onPress: () => showEditContactModal(contact) },
         { text: 'Cancel', style: 'cancel' },
       ],
       { cancelable: true }
@@ -182,30 +163,31 @@ const handleSearch = (query) => {
         }}>
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
+          <Text style={styles.modalTitle}>Add New Contact</Text>
             <TextInput
               style={styles.modalInput}
-              placeholder="Enter name..."
+              placeholder="Enter contact name..."
               onChangeText={setNewContactName}
               value={newContactName}
             />
-            <Button
-              title={isEditMode ? "Save Changes" : "Add Contact"}
-              onPress={() => {
-                if (isEditMode) {
-                  handleEditContact(editingContactId, newContactName);
-                } else {
-                  handleAddNewContact();
-                }
-              }}
-            />
-            <Button
-              title="Cancel"
-              color="#ff5c5c"
-              onPress={() => {
-                setAddModalVisible(false);
-                setNewContactName('');
-              }}
-            />
+
+           <View style={styles.buttonRow}>
+
+            <TouchableOpacity
+             style={[styles.modalButton, styles.addContactButton]}
+             onPress={handleAddNewContact}>
+               <Text style={styles.modalButtonText}>Add Contact</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+             style={[styles.modalButton, styles.cancelButton]}
+             onPress={() => {
+              setAddModalVisible(false);
+              setNewContactName('');
+              }}>
+                <Text style={styles.modalButtonText}>Cancel</Text>
+             </TouchableOpacity>
+           </View>
           </View>
         </View>
       </Modal>
@@ -315,9 +297,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  addIcon: {
-    
-  },
   addIconText: {
     color: '#fff',
     fontSize: 24,
@@ -339,15 +318,46 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
+    width: '80%',
     backgroundColor: '#fff',
     borderRadius: 30,
     padding: 35,
     alignItems: 'center',
   },
   modalInput: {
-    width: '80%',
-    borderBottomWidth: 1,
-    padding: 10,
-    marginBottom: 20,
+    width: "100%", 
+    height: 40,
+    marginBottom: 15,
+    paddingHorizontal: 4,
+    paddingVertical: 8,
+    borderColor: "#ddd", 
+    borderWidth: 1, 
+    borderRadius: 4, 
+    color: "#000",
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  modalButton: {
+    backgroundColor: '#fff', 
+    borderRadius: 4, 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    flexGrow: 1, 
+    marginHorizontal: 5, 
+    alignItems: 'center', 
+  },
+  modalButtonText: {
+    color: '#000', 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+  },
+  modalTitle: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });
