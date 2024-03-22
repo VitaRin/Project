@@ -25,7 +25,8 @@
     "react-native-aes-crypto": "^3.0.1",
     "react-native-crypto-js": "^1.0.0",
     "react-native-gesture-handler": "~2.14.0",
-    "react-native-hash": "^3.0.3"
+    "react-native-hash": "^3.0.3",
+    "expo-local-authentication": "~13.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

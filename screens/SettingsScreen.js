@@ -1,24 +1,38 @@
-import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
-import { Button } from 'react-native';
-import {  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useContext,
+  Linking,
+} from "react";
+import { Button } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Modal,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LanguageContext } from "./LanguageProvider";
 import i18n from "../i18n.js";
+import * as LocalAuthentication from "expo-local-authentication";
 
-
-const SettingsScreen = ({navigation}) => {
-  const [newUsername, setNewUsername] = useState('');
+const SettingsScreen = ({ navigation }) => {
+  const [newUsername, setNewUsername] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [isChangingUsername, setIsChangingUsername] = useState(false);
   const [biometricsEnabled, setBiometricsEnabled] = useState(); // Remove default state
-  const [refreshing, setRefreshing] = useState(false);
-  const { locale } = useContext(LanguageContext);
+
   const { changeLanguage } = useContext(LanguageContext);
 
-  useEffect(() => {
-    // Load biometric preference from AsyncStorage when the component mounts
-    loadBiometricPreference();
-  }, []);
+  // useEffect(() => {
+  //   // Load biometric preference from AsyncStorage when the component mounts
+  //   loadBiometricPreference();
+  // }, []);
 
   const showLanguageOptions = () => {
     Alert.alert(
@@ -41,7 +55,6 @@ const SettingsScreen = ({navigation}) => {
     });
   }, [navigation]);
 
-
   const handleDeleteAccount = async () => {
     Alert.alert(
       i18n.t("warning"),
@@ -49,19 +62,19 @@ const SettingsScreen = ({navigation}) => {
       [
         {
           text: i18n.t("no"),
-          style: 'cancel',
+          style: "cancel",
         },
         {
           text: i18n.t("yes"),
           onPress: async () => {
             try {
               // Remove both the username and password from AsyncStorage
-              await AsyncStorage.removeItem('username');
-              await AsyncStorage.removeItem('password');
+              await AsyncStorage.removeItem("username");
+              await AsyncStorage.removeItem("password");
               navigation.navigate("Register");
               // Redirect to the login screen or perform any other desired action
             } catch (error) {
-              console.error('Error deleting account:', error);
+              console.error("Error deleting account:", error);
             }
           },
         },
@@ -81,33 +94,73 @@ const SettingsScreen = ({navigation}) => {
   const handleChangeUsername = async () => {
     try {
       // Update the stored username in AsyncStorage with the new value
-      await AsyncStorage.setItem('username', newUsername);
+      await AsyncStorage.setItem("username", newUsername);
       setModalVisible(false);
       // Optionally, display a success message or perform any other desired action
     } catch (error) {
-      console.error('Error changing username:', error);
+      console.error("Error changing username:", error);
     }
   };
 
-  const loadBiometricPreference = async () => {
-    try {
-      const bioState = await AsyncStorage.getItem('biometricsEnabled');
-      if (bioState !== null) {
-        setBiometricsEnabled(bioState === 'true');
-      }
-    } catch (error) {
-      console.error('Error loading biometric preference:', error);
-    }
-  };
+  // const loadBiometricPreference = async () => {
+  //   try {
+  //     const bioState = await AsyncStorage.getItem("biometricsEnabled");
+  //     if (bioState !== null) {
+  //       setBiometricsEnabled(bioState === "true");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading biometric preference:", error);
+  //   }
+  // };
 
-  const handleChangeBiometrics = async () => {
-    try {
-      setBiometricsEnabled(!biometricsEnabled);
-      // If user is trying to ENABLE biometrics, check if their device is compatible (has sensors)
-      // And if the user has a registered fingerprint (same in register)
-      await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
-    } catch (error) {
-      console.error('Error changing biometric preference:', error);
+  // const handleChangeBiometrics = async () => {
+  //   try {
+  //     setBiometricsEnabled(!biometricsEnabled);
+  //     // If user is trying to ENABLE biometrics, check if their device is compatible (has sensors)
+  //     // And if the user has a registered fingerprint (same in register)
+  //     await AsyncStorage.setItem(
+  //       "biometricsEnabled",
+  //       biometricsEnabled.toString()
+  //     );
+  //   } catch (error) {
+  //     console.error("Error changing biometric preference:", error);
+  //   }
+  // };
+
+  const handleEnableBiometrics = async () => {
+    const hasBiometricHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasBiometricHardware) {
+      Alert.alert("Unavailable", "Your device does not support biometrics.");
+      return;
+    }
+
+    const biometricsEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!biometricsEnrolled) {
+      Alert.alert(
+        "No Biometrics",
+        "Please set up biometric authentication in your device settings.",
+        [
+          {
+            text: "Go to Settings",
+            onPress: () => Linking.openSettings(),
+          },
+
+          { text: "Cancel", style: "cancel" },
+        ]
+      );
+      return;
+    }
+
+    const authResult = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate",
+      fallbackLabel: "Enter Password",
+      cancelLabel: "Cancel",
+    });
+
+    if (authResult.success) {
+      Alert.alert("Authentication Successful", "Biometrics are now enabled.");
+    } else {
+      Alert.alert("Authentication Failed", "You could not be authenticated.");
     }
   };
 
@@ -115,7 +168,7 @@ const SettingsScreen = ({navigation}) => {
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/ghost.png')} // logo path
+          source={require("../assets/ghost.png")} // logo path
           style={styles.logo}
         />
       </View>
@@ -188,8 +241,10 @@ const SettingsScreen = ({navigation}) => {
         <Text style={styles.buttonText}>{i18n.t("changelanguage")}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleChangeBiometrics}>
-        <Text style={styles.buttonText}>{biometricsEnabled ? 'Disable Biometrics' : 'Enable Biometrics'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleEnableBiometrics}>
+        <Text style={styles.buttonText}>
+          {biometricsEnabled ? "Disable Biometrics" : "Enable Biometrics"}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
@@ -199,10 +254,9 @@ const SettingsScreen = ({navigation}) => {
       <TouchableOpacity style={styles.button} onPress={handleDeleteAccount}>
         <Text style={styles.buttonText}>{i18n.t("deleteaccount")}</Text>
       </TouchableOpacity>
-
     </View>
   );
-}
+};
 
 // const styles = StyleSheet.create({
 //   container: {
@@ -244,7 +298,6 @@ const SettingsScreen = ({navigation}) => {
 //     alignItems: 'center',
 //   },
 
-
 //   logoContainer: {
 //     alignItems: 'center',
 //     marginVertical: 20,
@@ -281,7 +334,7 @@ const SettingsScreen = ({navigation}) => {
 //   },
 //   navbar: {
 //     flexDirection: 'row',
-//     justifyContent: 'space-between', 
+//     justifyContent: 'space-between',
 //     alignItems: 'center',
 //     backgroundColor: '#F0F0F0',
 //     width: '100%',

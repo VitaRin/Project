@@ -1,44 +1,48 @@
-import React, { useState, useLayoutEffect, useEffect} from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  SectionList, 
-  TouchableOpacity, 
-  Alert, 
-  TextInput, 
+import React, { useState, useLayoutEffect, useEffect, useContext } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SectionList,
+  TouchableOpacity,
+  Alert,
+  TextInput,
   StatusBar,
   Button,
   Modal,
- } from 'react-native';
- import AsyncStorage from '@react-native-async-storage/async-storage';
- import { LanguageContext } from "./LanguageProvider";
- import i18n from "../i18n.js";
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LanguageContext } from "./LanguageProvider";
+import i18n from "../i18n.js";
 
-const STORAGE_KEY = '@contacts';
-
+const STORAGE_KEY = "@contacts";
 
 // grouped by first letter
 const processContactsData = (contacts, query) => {
   if (!contacts) {
-    console.error('processContactsData was called with undefined contacts');
+    console.error("processContactsData was called with undefined contacts");
     return [];
   }
+  const { locale } = useContext(LanguageContext);
   const lowercasedQuery = query.toLowerCase();
-  const filteredContacts = query ? contacts.filter(contact =>
-    contact.name.toLowerCase().includes(lowercasedQuery)
-  ) : contacts;
+  const filteredContacts = query
+    ? contacts.filter((contact) =>
+        contact.name.toLowerCase().includes(lowercasedQuery)
+      )
+    : contacts;
 
-  const sortedContacts = filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
+  const sortedContacts = filteredContacts.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
   const groupedContacts = [];
-  let currentLetter = '';
+  let currentLetter = "";
 
-  sortedContacts.forEach(contact => {
+  sortedContacts.forEach((contact) => {
     if (contact.name[0].toUpperCase() !== currentLetter) {
       currentLetter = contact.name[0].toUpperCase();
       groupedContacts.push({
         title: currentLetter,
-        data: []
+        data: [],
       });
     }
     groupedContacts[groupedContacts.length - 1].data.push(contact);
@@ -47,28 +51,26 @@ const processContactsData = (contacts, query) => {
   return groupedContacts;
 };
 
-export default function ContactScreen({navigation}) {
+export default function ContactScreen({ navigation }) {
+  const [contacts, setContacts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddModalVisible, setAddModalVisible] = useState(false);
+  const [newContactName, setNewContactName] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingContactId, setEditingContactId] = useState(null);
 
-const [contacts, setContacts] = useState([]);
-const [searchQuery, setSearchQuery] = useState('');
-const [isAddModalVisible, setAddModalVisible] = useState(false);
-const [newContactName, setNewContactName] = useState('');
-const [isEditMode, setIsEditMode] = useState(false); 
-const [editingContactId, setEditingContactId] = useState(null);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerStyle: {
+        backgroundColor: "#000",
+      },
+      headerTintColor: "#fff",
+    });
+  }, [navigation]);
 
-useLayoutEffect(() => {
-  navigation.setOptions({
-    headerStyle: {
-      backgroundColor: '#000', 
-    },
-    headerTintColor: '#fff', 
-    
-  });
-}, [navigation]);
-
-const handleSearch = (query) => {
-  setSearchQuery(query);
-};
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   useEffect(() => {
     const loadContacts = async () => {
@@ -78,73 +80,79 @@ const handleSearch = (query) => {
           setContacts(JSON.parse(storedContacts));
         }
       } catch (e) {
-        console.error('Failed to load contacts.', e);
+        console.error("Failed to load contacts.", e);
       }
     };
 
     loadContacts();
   }, []);
 
-
   const saveContacts = async (updatedContacts) => {
     try {
       const jsonValue = JSON.stringify(updatedContacts);
       await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
     } catch (e) {
-      console.error('Failed to save contacts to storage', e);
+      console.error("Failed to save contacts to storage", e);
     }
   };
 
   // Function to handle the selection from the contact action menu
   const handleContactAction = (action, userName) => {
-    if (action === 'Start Chat') {
-      navigation.navigate('Chat', {userName: userName});
+    if (action === "Start Chat") {
+      navigation.navigate("Chat", { userName: userName });
     }
   };
-
 
   //add
   const handleAddNewContact = () => {
     if (newContactName.trim()) {
-      if (!contacts.some(contact => contact.name.toLowerCase() === newContactName.toLowerCase())) {
-        const newContact = { id: Date.now().toString(), name: newContactName.trim() };
+      if (
+        !contacts.some(
+          (contact) =>
+            contact.name.toLowerCase() === newContactName.toLowerCase()
+        )
+      ) {
+        const newContact = {
+          id: Date.now().toString(),
+          name: newContactName.trim(),
+        };
         const newContacts = [...contacts, newContact];
         setContacts(newContacts);
         saveContacts(newContacts); // save new contacts
-        setNewContactName('');
+        setNewContactName("");
         setAddModalVisible(false);
       } else {
-        Alert.alert('Error', 'A contact with this name already exists.');
+        Alert.alert("Error", "A contact with this name already exists.");
       }
     } else {
-      Alert.alert('Error', 'Contact name cannot be empty.');
+      Alert.alert("Error", "Contact name cannot be empty.");
     }
   };
-  
 
-//remove
+  //remove
   const removeContact = (contactId) => {
-    const updatedContacts = contacts.filter(contact => contact.id !== contactId);
-    setContacts(updatedContacts); 
+    const updatedContacts = contacts.filter(
+      (contact) => contact.id !== contactId
+    );
+    setContacts(updatedContacts);
     saveContacts(updatedContacts);
   };
 
-
-//edit
+  //edit
   const handleEditContact = (contactId, newName) => {
-    const updatedContacts = contacts.map(contact =>
+    const updatedContacts = contacts.map((contact) =>
       contact.id === contactId ? { ...contact, name: newName } : contact
     );
-    setContacts(updatedContacts); 
-    saveContacts(updatedContacts); 
+    setContacts(updatedContacts);
+    saveContacts(updatedContacts);
 
     setAddModalVisible(false);
     setIsEditMode(false);
     setEditingContactId(null);
-    setNewContactName('');
+    setNewContactName("");
   };
 
-  // show the edit one 
+  // show the edit one
   const showEditContactModal = (contact) => {
     setIsEditMode(true);
     setEditingContactId(contact.id);
@@ -152,26 +160,26 @@ const handleSearch = (query) => {
     setAddModalVisible(true);
   };
 
-
   // Function to show the contact action menu
   const showContactActionMenu = (contact) => {
     Alert.alert(
       contact.name,
       "Choose an action for this contact:",
       [
-        { text: 'Start Chat', onPress: () => handleContactAction('Start Chat', contact.name) },
-        { text: 'Remove', onPress: () => removeContact(contact.id) },
-        { text: 'Edit', onPress: () => showEditContactModal(contact) },
-        { text: 'Cancel', style: 'cancel' },
+        {
+          text: "Start Chat",
+          onPress: () => handleContactAction("Start Chat", contact.name),
+        },
+        { text: "Remove", onPress: () => removeContact(contact.id) },
+        { text: "Edit", onPress: () => showEditContactModal(contact) },
+        { text: "Cancel", style: "cancel" },
       ],
       { cancelable: true }
     );
   };
 
-
   return (
     <View style={styles.container}>
-      
       <StatusBar barStyle="light-content" />
       <Modal
         animationType="slide"
@@ -179,7 +187,8 @@ const handleSearch = (query) => {
         visible={isAddModalVisible}
         onRequestClose={() => {
           setAddModalVisible(!isAddModalVisible);
-        }}>
+        }}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
             <TextInput
@@ -203,17 +212,18 @@ const handleSearch = (query) => {
               color="#ff5c5c"
               onPress={() => {
                 setAddModalVisible(false);
-                setNewContactName('');
+                setNewContactName("");
               }}
             />
           </View>
         </View>
       </Modal>
       <View style={styles.header}>
-        <Text style={styles.title}>Contacts</Text>
+        <Text style={styles.title}>{i18n.t("contacts")}</Text>
         <TouchableOpacity
           style={styles.addIcon}
-          onPress={() => setAddModalVisible(true)}>
+          onPress={() => setAddModalVisible(true)}
+        >
           <Text style={styles.addIconText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -228,7 +238,10 @@ const handleSearch = (query) => {
         sections={processContactsData(contacts, searchQuery)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => showContactActionMenu(item)} style={styles.contactItem}>
+          <TouchableOpacity
+            onPress={() => showContactActionMenu(item)}
+            style={styles.contactItem}
+          >
             <Text style={styles.userName}>{item.name}</Text>
           </TouchableOpacity>
         )}
@@ -243,29 +256,29 @@ const handleSearch = (query) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1F1F1F',
+    backgroundColor: "#1F1F1F",
   },
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    backgroundColor: '#000',
-    height: 60, 
-    width: '100%',
-    position: 'absolute',
-    bottom: 0
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#000",
+    height: 60,
+    width: "100%",
+    position: "absolute",
+    bottom: 0,
   },
   searchSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 10,
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   searchInput: {
-    backgroundColor: '#333', 
-    color: '#fff', 
+    backgroundColor: "#333",
+    color: "#fff",
     borderRadius: 10,
     fontSize: 16,
     padding: 10,
@@ -276,76 +289,74 @@ const styles = StyleSheet.create({
   addContactButton: {
     marginLeft: 10,
     paddingHorizontal: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   addContactButtonText: {
     fontSize: 24,
-    color: '#007AFF',
+    color: "#007AFF",
   },
   contactItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderBottomColor: "#ccc",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   userName: {
     fontSize: 18,
-    color: '#fff'
+    color: "#fff",
   },
   infoButton: {
     padding: 10,
   },
   infoButtonText: {
     fontSize: 22,
-    color:'#007AFF'
+    color: "#007AFF",
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 40,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 10,
-    backgroundColor: '#1F1F1F', 
+    backgroundColor: "#1F1F1F",
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-  addIcon: {
-    
-  },
+  addIcon: {},
   addIconText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sectionHeader: {
-    backgroundColor: '#333', 
-    color: '#fff', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
-    fontSize: 16, 
-    fontWeight: 'bold', 
+    backgroundColor: "#333",
+    color: "#fff",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontSize: 16,
+    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 22,
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 30,
     padding: 35,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalInput: {
-    width: '80%',
+    width: "80%",
     borderBottomWidth: 1,
     padding: 10,
     marginBottom: 20,

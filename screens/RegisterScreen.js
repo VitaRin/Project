@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Switch,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Encryptor } from "./Encryption";
 import { LanguageContext } from "./LanguageProvider";
+import i18n from "../i18n.js";
 // import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
   const handleRegister = async () => {
     // For now, just show an alert with the collected information
     if (password !== confirmPassword) {
-      Alert.alert('Password Mismatch');
+      Alert.alert("Password Mismatch");
       return;
     }
     // Password validation regex pattern
@@ -33,38 +43,42 @@ export default function RegisterScreen({ navigation }) {
     // If possible, add a regex to make sure that the username also does not contain these characters
     // and that the username is not an email (anonimity purposes)
     saveData();
-};
+  };
 
   let message = "my secret message";
-const saveData = async () => {
-  try {
-    // Hash the password
-    // console.log(password)
-    // console.log(username)
-    let hashedPassword = await Encryptor.hash(password);
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    // console.log(hashedPassword)
-    // Store the username and hashed password locally
-    await AsyncStorage.setItem('username', username);
-    await AsyncStorage.setItem('password', hashedPassword);
-    await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
-    console.log(biometricsEnabled.toString());
-    //generate and store the public key and private key
-    await Encryptor.generateAndStoreKey();
-    // Add alert
-    navigation.navigate("Main");
-  } catch (error) {
-    console.error('Error saving data:', error);
-    Alert.alert('Error', 'An error occurred while saving data.');
-  }
-};
+  const saveData = async () => {
+    try {
+      // Hash the password
+      // console.log(password)
+      // console.log(username)
+      let hashedPassword = await Encryptor.hash(password);
+      // const hashedPassword = await bcrypt.hash(password, 10);
+      // console.log(hashedPassword)
+      // Store the username and hashed password locally
+      await AsyncStorage.setItem("username", username);
+      await AsyncStorage.setItem("password", hashedPassword);
+      await AsyncStorage.setItem(
+        "biometricsEnabled",
+        biometricsEnabled.toString()
+      );
+      console.log(biometricsEnabled.toString());
+      //generate and store the public key and private key
+      await Encryptor.generateAndStoreKey();
+      // Add alert
+      navigation.navigate("Main");
+    } catch (error) {
+      console.error("Error saving data:", error);
+      Alert.alert("Error", "An error occurred while saving data.");
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/ghost.png')} // Replace with the actual path or use require for local images
-        style={styles.logo}/>
-      <Text style = {styles.signupText}>{i18n.t("welcome")}</Text>
+        source={require("../assets/ghost.png")} // Replace with the actual path or use require for local images
+        style={styles.logo}
+      />
+      <Text style={styles.signupText}>{i18n.t("welcome")}</Text>
       <TextInput
         style={styles.input}
         placeholder={i18n.t("username")}
@@ -89,22 +103,23 @@ const saveData = async () => {
         placeholderTextColor="#fff" //white text color
       />
       <View style={styles.switchContainer}>
-        <Text style={styles.enableBiometricsText}>{i18n.t("enablebiometrics")}</Text>
+        <Text style={styles.enableBiometricsText}>
+          {i18n.t("enablebiometrics")}
+        </Text>
         <Switch
           value={biometricsEnabled}
           onValueChange={(value) => setBiometricsEnabled(value)}
-          trackColor={{false: "#767577", true: "#81b0ff"}}
-          thumbColor={(biometricsEnabled ? "#f5dd4b" : "#f4f3f4")}
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          thumbColor={biometricsEnabled ? "#f5dd4b" : "#f4f3f4"}
         />
-     </View>
-     {/* Register button */}
-     <TouchableOpacity style={styles.button} 
-        onPress={handleRegister}>
+      </View>
+      {/* Register button */}
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>{i18n.t("register")}</Text>
       </TouchableOpacity>
 
       {/* Go Back button */}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
         <Text style={styles.goBackText}>{i18n.t("goToLogin")}</Text>
       </TouchableOpacity>
     </View>
@@ -114,58 +129,56 @@ const saveData = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#000",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   signupText: {
     marginBottom: 10, //adding margin bottom for spacing
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold', // Make text bold
-
+    fontWeight: "bold", // Make text bold
   },
   logo: {
     width: 100, // Adjust the width as needed
     height: 100, // Adjust the height as needed
     marginBottom: 20,
-    resizeMode: 'contain',
-  
+    resizeMode: "contain",
   },
 
   enableBiometricsText: {
-    color: '#fff', //White color
+    color: "#fff", //White color
     marginRight: 10, //add margin to separate from the switch
   },
 
   input: {
     height: 40,
-    width: '80%',
-    borderColor: '#fff',
+    width: "80%",
+    borderColor: "#fff",
     borderWidth: 1,
     marginBottom: 20,
     padding: 10,
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
   },
   switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: "blue",
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
   },
   buttonText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
   },
   goBackText: {
     marginTop: 20,
-    color: 'blue',
+    color: "blue",
   },
 });
