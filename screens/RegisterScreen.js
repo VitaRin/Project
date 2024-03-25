@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Encryptor } from "./Encryption";
 import { LanguageContext } from "./LanguageProvider";
 import i18n from "../i18n.js";
+import {BackupManager} from "./Backup";
 // import bcrypt from 'bcryptjs';
 
 export default function RegisterScreen({ navigation }) {
@@ -57,7 +58,8 @@ const saveData = async () => {
     //generate and store the public key and private key
     
     await Encryptor.generateAndStoreKey();
-    
+    //Backup user data
+    await BackupManager.backupUserData();
     // Add alert
     navigation.navigate("Main");
   } catch (error) {
