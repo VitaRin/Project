@@ -76,6 +76,7 @@ const saveData = async () => {
         source={require('../assets/ghost.png')} // Replace with the actual path or use require for local images
         style={styles.logo}/>
       <Text style = {styles.signupText}>{i18n.t("welcome")}</Text>
+      <View style={styles.loginBox}>
       <TextInput
         style={styles.input}
         placeholder={i18n.t("username")}
@@ -99,16 +100,7 @@ const saveData = async () => {
         onChangeText={(text) => setConfirmPassword(text)}
         placeholderTextColor="#fff" //white text color
       />
-      <View style={styles.switchContainer}>
-        <Text style={styles.enableBiometricsText}>{i18n.t("enablebiometrics")}</Text>
-        <Switch
-          value={biometricsEnabled}
-          onValueChange={(value) => setBiometricsEnabled(value)}
-          trackColor={{false: "#767577", true: "#81b0ff"}}
-          thumbColor={(biometricsEnabled ? "#f5dd4b" : "#f4f3f4")}
-        />
-     </View >
-
+</View>
      {/* Register button */}
       {loading && (
       <View style={styles.fullScreenLoader}>
@@ -122,11 +114,6 @@ const saveData = async () => {
       </TouchableOpacity>
     )}
      
-
-      {/* Go Back button */}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.goBackText}>{i18n.t("goToLogin")}</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -134,7 +121,7 @@ const saveData = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#141414',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -161,8 +148,9 @@ const styles = StyleSheet.create({
 
   input: {
     height: 40,
-    width: '80%',
+    width: '100%',
     borderColor: '#fff',
+    borderRadius: 10, 
     borderWidth: 1,
     marginBottom: 20,
     padding: 10,
@@ -175,7 +163,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: 'green',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
@@ -203,5 +191,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', 
     zIndex: 1, 
+  },
+  loginBox: {
+    width: '80%', 
+    padding: 20,
+    borderColor: '#242424', 
+    borderWidth: 2, 
+    borderRadius: 10, 
+    marginBottom: 20, 
   },
 });

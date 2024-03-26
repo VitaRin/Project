@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Encryptor} from "./Encryption";
@@ -10,6 +10,24 @@ export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { locale } = useContext(LanguageContext);
+  const [placeholder, setPlaceholder] = useState('Welcome');
+
+
+  useEffect(() => {
+    const loadUsername = async () => {
+      try {
+        const storedUsername = await AsyncStorage.getItem('username');
+        if (storedUsername !== null) {
+          setPlaceholder(`Welcome ${storedUsername}`); 
+        }
+      } catch (error) {
+        console.error('Error retrieving username:', error);
+      }
+    };
+  
+    loadUsername();
+  }, []);
+
 
   const handleLogin = async () => {
     try {
@@ -22,18 +40,24 @@ export default function LoginScreen({ navigation }) {
       console.log(storedHashedPassword);
 
       // Check if the entered username matches the stored username
-      if (username === storedUsername) {
+      
         // Compare the entered password with the stored hashed password using bcrypt
         // const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
 
         if (hashedPassword === storedHashedPassword) {
+          await AsyncStorage.setItem('username', username);
+          console.log('Your username is:', username);
+          console.log('Your password is:', password); 
           navigation.navigate("Main");
+
+          setUsername('');
+          setPassword('');
+    
         } else {
+          console.log('Incorrect password');
           // setErrorMessage('Incorrect password');
         }
-      } else {
-        // setErrorMessage('Username not found');
-      }
+      
     } catch (error) {
       console.error('Error retrieving stored credentials:', error);
     }
@@ -45,15 +69,9 @@ export default function LoginScreen({ navigation }) {
       <Image
         source={require('../assets/ghost.png')} // Replace with the actual path or use require for local images
         style={styles.logo}/>
-      <Text style = {styles.appText}>Secure Chat</Text>
-      {/* Username input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        onChangeText={(text) => setUsername(text)}
-        value={username}
-        placeholderTextColor="#fff" //white text color
-      />
+      <Text style = {styles.AppText}>{placeholder}!!!</Text>
+      <View style={styles.loginBox}>
+
 
       {/* Password input */}
       <TextInput
@@ -70,11 +88,8 @@ export default function LoginScreen({ navigation }) {
         onPress={handleLogin}>
         <Text style={styles.buttonText}>{i18n.t("login")}</Text>
       </TouchableOpacity>
-
-      {/* Go Back button */}
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.goBackText}>Go Back</Text>
-      </TouchableOpacity>
+      </View>
+      
     </View>
   );
 }
@@ -82,7 +97,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#141414',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -102,8 +117,9 @@ const styles = StyleSheet.create({
 
   input: {
     height: 40,
-    width: '80%',
+    width: '90%',
     borderColor: '#fff',
+    borderRadius: 30,
     borderWidth: 1,
     marginBottom: 20,
     padding: 10,
@@ -111,9 +127,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: 'green',
+    width: '50%',
     padding: 10,
     borderRadius: 5,
+    alignSelf: 'center',
     marginTop: 10,
   },
   buttonText: {
@@ -122,6 +140,14 @@ const styles = StyleSheet.create({
   },
   goBackText: {
     marginTop: 20,
-    color: 'blue',
+    color: '#fff',
+  },
+  loginBox: {
+    width: '80%', 
+    padding: 20,
+    borderColor: '#242424', 
+    borderWidth: 2, 
+    borderRadius: 10, 
+    marginBottom: 20, 
   },
 });
