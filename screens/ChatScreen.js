@@ -60,16 +60,31 @@ const handleSend = ()  => {
   if (inputText.trim().length > 0) {
     setMessages([...messages, { id: Date.now().toString(), text: inputText }]);
     setInputText('');
+
+    setTimeout(() => {
+      const botReply = {
+        id: Date.now().toString(),
+        text: "Hi, I am a bot",
+        isReceived: true,
+      };
+      setMessages(currentMessages => [...currentMessages, botReply]);
+    }, 1000);
   }
 };
 
 const renderMessageItem = ({item}) => {
   return(
-    <View style={styles.messageContainer}>
-    <View style={styles.sentMessage}>
-      <Text style={styles.messageText}>{item.text}</Text>
+
+    <View style={[styles.messageContainer, item.isReceived ? { justifyContent: 'flex-start' } : { justifyContent: 'flex-end' }]}>
+      <View style={item.isReceived ? styles.receivedMessage : styles.sentMessage}>
+        <Text style={styles.messageText}>{item.text}</Text>
+      </View>
     </View>
-  </View>
+  //   <View style={styles.messageContainer}>
+  //   <View style={styles.sentMessage}>
+  //     <Text style={styles.messageText}>{item.text}</Text>
+  //   </View>
+  // </View>
   );
 };
 
@@ -116,12 +131,12 @@ const styles = StyleSheet.create({
   },
   sentMessage: {
     backgroundColor: 'green',
-    borderRadius: 30,
+    borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 15,
     marginRight: 10,
-    marginTop: 3,
-    maxWidth: '80%',
+    marginTop: 5,
+    maxWidth: '70%',
     alignItems: 'flex-end',
   },
   messageText: {
@@ -141,5 +156,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     marginRight: 10,
+  },
+  receivedMessage: {
+    backgroundColor: '#000',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    maxWidth: '70%',
+    alignSelf: 'flex-start',
+    marginLeft: 10,
+    marginBottom: 5,
   },
 });

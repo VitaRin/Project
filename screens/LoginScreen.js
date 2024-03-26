@@ -25,8 +25,12 @@ export default function LoginScreen({ navigation }) {
       }
     };
   
-    loadUsername();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', loadUsername);
+
+    // 当组件卸载时，取消订阅事件监听器
+    return unsubscribe;
+  }, [navigation]);
+  
 
 
   const handleLogin = async () => {
@@ -45,14 +49,9 @@ export default function LoginScreen({ navigation }) {
         // const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
 
         if (hashedPassword === storedHashedPassword) {
-          await AsyncStorage.setItem('username', username);
-          console.log('Your username is:', username);
           console.log('Your password is:', password); 
           navigation.navigate("Main");
-
-          setUsername('');
           setPassword('');
-    
         } else {
           console.log('Incorrect password');
           // setErrorMessage('Incorrect password');
