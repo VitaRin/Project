@@ -12,15 +12,15 @@ import {
 import { io } from "socket.io-client";
 const serverUrl = "ws://192.168.177.136:4000";
 const socket = io(serverUrl);
-
+socket.on('connect', () => {
+  socket.emit('get messages',"get");
+  console.log('Connected to server via SOCKS proxy');
+});
 export default function ChatScreen({route, navigation}) {
-  socket.on('connect', () => {
-    socket.emit('get messages',"get");
-    console.log('Connected to server via SOCKS proxy');
-  });
+
 
   const {userName} = route.params;
-  
+
 
   const handleKillChat = () => {
     socket.emit("kill", () => {
@@ -69,9 +69,9 @@ const [inputText, setInputText] = useState('');
 
 
 socket.on('got messages', (msg) =>{
-  console.log("got messages");
   setMessages(msg);
 });
+
 
 socket.on('rec message', (msg) => {
   console.log(msg);
@@ -93,7 +93,7 @@ const renderMessageItem = ({item}) => {
   return(
 
     <View style={[styles.messageContainer, item.isReceived ? { justifyContent: 'flex-start' } : { justifyContent: 'flex-end' }]}>
-      <View style={item.isReceived ? styles.receivedMessage : styles.sentMessage}>
+      <View style={(item.name !== userName) ? styles.receivedMessage : styles.sentMessage}>
         <Text style={styles.messageText}>{item.text}</Text>
       </View>
     </View>
@@ -140,6 +140,8 @@ const styles = StyleSheet.create({
   chatArea: {
     flex: 1,
     paddingHorizontal: 10,
+    width: "100%",
+    alignSelf:'center'
   },
   messageContainer: {
     flexDirection: 'row',
@@ -154,7 +156,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginTop: 5,
     maxWidth: '70%',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
+    alignSelf:"flex-start",
   },
   messageText: {
     color: '#fff',
@@ -180,8 +183,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 15,
     maxWidth: '70%',
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
     marginLeft: 10,
     marginBottom: 5,
+    left:"-90%"
   },
 });

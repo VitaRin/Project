@@ -57,7 +57,7 @@ const saveData = async () => {
     console.log(biometricsEnabled.toString());
     //generate and store the public key and private key
     
-    await Encryptor.generateAndStoreKey();
+    //await Encryptor.generateAndStoreKey();
     //Backup user data
     await BackupManager.backupUserData();
     // Add alert
