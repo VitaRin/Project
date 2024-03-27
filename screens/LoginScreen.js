@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Encryptor} from "./Encryption";
 import { LanguageContext } from "./LanguageProvider";
 import i18n from "../i18n.js";
+import * as LocalAuthentication from "expo-local-authentication";
+import { useFocusEffect } from "@react-navigation/native"; // 引入 useFocusEffect
 // import bcrypt from 'bcryptjs';
 
 export default function LoginScreen({ navigation }) {
@@ -11,6 +13,45 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const { locale } = useContext(LanguageContext);
   const [placeholder, setPlaceholder] = useState('Welcome');
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+
+  const loadBiometricPreference = async () => {
+    try {
+      const bioState = await AsyncStorage.getItem("biometricsEnabled");
+      console.log("Biometrics Enabled from AsyncStorage (Login):", bioState); // 确保变量名匹配
+      setBiometricsEnabled(bioState === "true");
+    } catch (error) {
+      console.error("Error loading biometric preference:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadBiometricPreference();
+  }, []);
+
+  // 使用 useFocusEffect 监听页面获得焦点事件
+  useFocusEffect(
+      React.useCallback(() => {
+        loadBiometricPreference();
+      }, [])
+  );
+
+  const handleBiometricLogin = async () => {
+    const biometricAuthResult = await LocalAuthentication.authenticateAsync({
+      promptMessage: i18n.t("authenticatePrompt"),
+      fallbackLabel: i18n.t("fallbackLabel"),
+      cancelLabel: i18n.t("cancel"),
+    });
+
+    if (biometricAuthResult.success) {
+      navigation.navigate("Main");
+    } else {
+      Alert.alert(
+          "Biometric Authentication Failed",
+          "Please try again or use username and password."
+      );
+    }
+  };
 
 
   useEffect(() => {
@@ -88,6 +129,13 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>{i18n.t("login")}</Text>
       </TouchableOpacity>
       </View>
+
+      {/* Biometric login button, only shown if biometrics is enabled */}
+      {biometricsEnabled && (
+          <TouchableOpacity style={styles.button} onPress={handleBiometricLogin}>
+            <Text style={styles.buttonText}>{i18n.t("loginWithBiometrics")}</Text>
+          </TouchableOpacity>
+      )}
       
     </View>
   );

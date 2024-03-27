@@ -66,3 +66,30 @@ server_socket.on('got messages', (msg) =>{
 app.listen(4000,() =>{
     console.log("4000")
 });
+
+/*io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
+
+io.on('connection', (socket) => {
+    socket.on('sent message', (msg) => {
+        messages.push(msg)
+        io.emit('rec message', messages);
+        console.log(msg)
+        console.log(messages)
+    });
+    socket.on('kill', (msg) => {
+        messages = [];
+    });
+    socket.on('get messages', (msg) => {
+        io.emit('got messages', messages);
+    })
+});
+
+
+server.listen(3000, () => {
+    console.log('listening on *:3000');
+});*/

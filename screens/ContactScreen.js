@@ -100,7 +100,7 @@ const handleSearch = (query) => {
   // Function to handle the selection from the contact action menu
   const handleContactAction = (action, userName) => {
     if (action === 'Start Chat') {
-      if (userName === "Snehal" || userName ==="Alex"){
+      if ((userName === "Snehal") || (userName ==="Alex")){
         navigation.navigate('Chat2', {userName: userName})
       }else {
         navigation.navigate('Chat', {userName: userName});

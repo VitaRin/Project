@@ -10,7 +10,7 @@ import {
   Platform
 } from 'react-native';
 import { io } from "socket.io-client";
-const serverUrl = "ws://192.168.177.136:4000";
+const serverUrl = "ws://192.168.173.137:4000";
 const socket = io(serverUrl);
 socket.on('connect', () => {
   socket.emit('get messages',"get");
