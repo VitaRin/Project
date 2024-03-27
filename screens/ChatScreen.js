@@ -9,16 +9,24 @@ import {
   TextInput,
   Platform
 } from 'react-native';
+import { io } from "socket.io-client";
+const serverUrl = "ws://192.168.177.136:4000";
+const socket = io(serverUrl);
 
 export default function ChatScreen({route, navigation}) {
+  socket.on('connect', () => {
+    socket.emit('get messages',"get");
+    console.log('Connected to server via SOCKS proxy');
+  });
 
   const {userName} = route.params;
-  
 
   const handleKillChat = () => {
+    socket.emit("kill", () => {
+      console.log("dead");
+    })
     navigation.navigate('Home', { deleteChat: userName });
   };
-
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -36,7 +44,7 @@ export default function ChatScreen({route, navigation}) {
      <Button
         onPress={() => navigation.navigate('Home', { newChat: userName })}
           title="< Home"
-          color={Platform.OS == "ios" ? "#fff" : "#111"}
+          color={Platform.OS === "ios" ? "#fff" : "#111"}
         />
       
       ),
@@ -56,21 +64,48 @@ export default function ChatScreen({route, navigation}) {
 const [messages, setMessages] = useState([]);
 const [inputText, setInputText] = useState('');
 
+
+
+socket.on('got messages', (msg) =>{
+  console.log("got messages");
+  setMessages(msg);
+});
+
+socket.on('rec message', (msg) => {
+  console.log(msg);
+  setMessages(msg);
+
+});
+
 const handleSend = ()  => {
   if (inputText.trim().length > 0) {
-    setMessages([...messages, { id: Date.now().toString(), text: inputText }]);
+    socket.emit('sent message', { id: Date.now().toString(), text: inputText, name:userName });
+    //setMessages(messages)
+    //setMessages([...messages, { id: Date.now().toString(), text: inputText, name:userName }]);
+    console.log(messages);
     setInputText('');
   }
 };
 
 const renderMessageItem = ({item}) => {
-  return(
-    <View style={styles.messageContainer}>
-    <View style={styles.sentMessage}>
-      <Text style={styles.messageText}>{item.text}</Text>
-    </View>
-  </View>
-  );
+  if (item.name === userName) {
+    return (
+        <View style={styles.messageContainer}>
+          <View style={styles.sentMessage}>
+            <Text style={styles.messageText}>{item.text}</Text>
+          </View>
+        </View>
+    );
+  }
+  else {
+    return (
+        <View style={styles.messageContainer}>
+          <View style={styles.recMessage}>
+            <Text style={styles.messageText}>{item.text}</Text>
+          </View>
+        </View>
+    );
+  }
 };
 
     return (
@@ -112,17 +147,32 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    justifyContent: 'flex-end',
+    position: 'relative',
+    alignSelf: "center",
   },
   sentMessage: {
+    right:  "-200%",
+    borderTopRightRadius: 10,
     backgroundColor: 'green',
     borderRadius: 30,
     paddingVertical: 10,
     paddingHorizontal: 15,
-    marginRight: 10,
     marginTop: 3,
     maxWidth: '80%',
     alignItems: 'flex-end',
+    alignSelf:"flex-end",
+  },
+  recMessage: {
+    left: "-200%",
+    borderTopLeftRadius:10,
+    backgroundColor: 'grey',
+    borderRadius: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginTop: 3,
+    maxWidth: '80%',
+    alignItems: 'flex-start',
+    alignSelf: 'flex-start',
   },
   messageText: {
     color: '#fff',
