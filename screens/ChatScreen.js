@@ -9,13 +9,23 @@ import {
   TextInput,
   Platform
 } from 'react-native';
+import { io } from "socket.io-client";
+const serverUrl = "ws://192.168.177.136:4000";
+const socket = io(serverUrl);
 
 export default function ChatScreen({route, navigation}) {
+  socket.on('connect', () => {
+    socket.emit('get messages',"get");
+    console.log('Connected to server via SOCKS proxy');
+  });
 
   const {userName} = route.params;
   
 
   const handleKillChat = () => {
+    socket.emit("kill", () => {
+      console.log("dead");
+    })
     navigation.navigate('Home', { deleteChat: userName });
   };
 
@@ -36,7 +46,7 @@ export default function ChatScreen({route, navigation}) {
      <Button
         onPress={() => navigation.navigate('Home', { newChat: userName })}
           title="< Home"
-          color={Platform.OS == "ios" ? "#fff" : "#111"}
+          color={Platform.OS === "ios" ? "#fff" : "#111"}
         />
       
       ),
@@ -56,19 +66,26 @@ export default function ChatScreen({route, navigation}) {
 const [messages, setMessages] = useState([]);
 const [inputText, setInputText] = useState('');
 
+
+
+socket.on('got messages', (msg) =>{
+  console.log("got messages");
+  setMessages(msg);
+});
+
+socket.on('rec message', (msg) => {
+  console.log(msg);
+  setMessages(msg);
+
+});
+
 const handleSend = ()  => {
   if (inputText.trim().length > 0) {
-    setMessages([...messages, { id: Date.now().toString(), text: inputText }]);
+    socket.emit('sent message', { id: Date.now().toString(), text: inputText, name:userName });
+    //setMessages(messages)
+    //setMessages([...messages, { id: Date.now().toString(), text: inputText, name:userName }]);
+    console.log(messages);
     setInputText('');
-
-    setTimeout(() => {
-      const botReply = {
-        id: Date.now().toString(),
-        text: "Hi, I am a bot",
-        isReceived: true,
-      };
-      setMessages(currentMessages => [...currentMessages, botReply]);
-    }, 1000);
   }
 };
 

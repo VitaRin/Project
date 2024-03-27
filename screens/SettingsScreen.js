@@ -1,22 +1,56 @@
-import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
-import { Button } from 'react-native';
-import {  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useContext,
+  Linking,
+} from "react";
+import { Button } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Modal,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LanguageContext } from "./LanguageProvider";
 import i18n from "../i18n.js";
+import * as LocalAuthentication from "expo-local-authentication";
 
-
-const SettingsScreen = ({navigation}) => {
-  const [newUsername, setNewUsername] = useState('');
+const SettingsScreen = ({ navigation }) => {
+  const [newUsername, setNewUsername] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [isChangingUsername, setIsChangingUsername] = useState(false);
   const [biometricsEnabled, setBiometricsEnabled] = useState(); // Remove default state
-  const [refreshing, setRefreshing] = useState(false);
-  const { locale } = useContext(LanguageContext);
+
   const { changeLanguage } = useContext(LanguageContext);
 
   useEffect(() => {
-    // Load biometric preference from AsyncStorage when the component mounts
+    // const loadBiometricPreference = async () => {
+    //   const bioState = await AsyncStorage.getItem("biometricsEnabled");
+    //   console.log("Current biometricsEnabled value (Settings):", bioEnabled); // 输出当前值
+    //   setBiometricsEnabled(bioState === "true"); // 确保状态为布尔值
+    // };
+    const loadBiometricPreference = async () => {
+      try {
+        const bioEnabled = await AsyncStorage.getItem("biometricsEnabled");
+        console.log("Biometric Enablement from AsyncStorage.", bioEnabled);
+        if (bioEnabled !== null) {
+          // Make sure bioEnabled is not null
+          setBiometricsEnabled(bioEnabled === "true");
+        } else {
+          // Handle cases where values have not yet been set in AsyncStorage
+          console.log("bioEnabled is not set in AsyncStorage.");
+        }
+      } catch (error) {
+        console.error("Error loading biometric preferences.", error);
+      }
+    };
+
     loadBiometricPreference();
   }, []);
 
@@ -41,7 +75,6 @@ const SettingsScreen = ({navigation}) => {
     });
   }, [navigation]);
 
-
   const handleDeleteAccount = async () => {
     Alert.alert(
       i18n.t("warning"),
@@ -49,19 +82,22 @@ const SettingsScreen = ({navigation}) => {
       [
         {
           text: i18n.t("no"),
-          style: 'cancel',
+          style: "cancel",
         },
         {
           text: i18n.t("yes"),
           onPress: async () => {
             try {
               // Remove both the username and password from AsyncStorage
-              await AsyncStorage.removeItem('username');
-              await AsyncStorage.removeItem('password');
+              // await AsyncStorage.removeItem("username");
+              // await AsyncStorage.removeItem("password");
+              AsyncStorage.getAllKeys().then((keys) =>
+                AsyncStorage.multiRemove(keys)
+              );
               navigation.navigate("Register");
               // Redirect to the login screen or perform any other desired action
             } catch (error) {
-              console.error('Error deleting account:', error);
+              console.error("Error deleting account:", error);
             }
           },
         },
@@ -81,33 +117,78 @@ const SettingsScreen = ({navigation}) => {
   const handleChangeUsername = async () => {
     try {
       // Update the stored username in AsyncStorage with the new value
-      await AsyncStorage.setItem('username', newUsername);
+      await AsyncStorage.setItem("username", newUsername);
       setModalVisible(false);
       // Optionally, display a success message or perform any other desired action
     } catch (error) {
-      console.error('Error changing username:', error);
+      console.error("Error changing username:", error);
     }
   };
 
-  const loadBiometricPreference = async () => {
-    try {
-      const bioState = await AsyncStorage.getItem('biometricsEnabled');
-      if (bioState !== null) {
-        setBiometricsEnabled(bioState === 'true');
-      }
-    } catch (error) {
-      console.error('Error loading biometric preference:', error);
-    }
-  };
+  const handleEnableBiometrics = async () => {
+    // Read current preferences first
+    const bioEnabled = await AsyncStorage.getItem("biometricsEnabled");
+    const isEnabled = bioEnabled === "true";
 
-  const handleChangeBiometrics = async () => {
-    try {
-      setBiometricsEnabled(!biometricsEnabled);
-      // If user is trying to ENABLE biometrics, check if their device is compatible (has sensors)
-      // And if the user has a registered fingerprint (same in register)
-      await AsyncStorage.setItem('biometricsEnabled', biometricsEnabled.toString());
-    } catch (error) {
-      console.error('Error changing biometric preference:', error);
+    // Check if biometric hardware is supported and if biometric data has been recorded
+    const hasBiometricHardware = await LocalAuthentication.hasHardwareAsync();
+    const biometricsEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+    if (isEnabled) {
+      // Prompt user to disable if already enabled
+      Alert.alert(
+        i18n.t("disableBiometricsTitle"),
+        i18n.t("disableBiometricsMessage"),
+        [
+          { text: i18n.t("cancel"), onPress: () => {}, style: "cancel" },
+
+          {
+            text: i18n.t("yes"),
+            onPress: async () => {
+              await AsyncStorage.setItem("biometricsEnabled", "false");
+              console.log("Biometrics has been disabled."); //  Outputs the state after the disable operation
+
+              setBiometricsEnabled(false);
+              Alert.alert(i18n.t("biometricsDisabledConfirmation"));
+            },
+          },
+        ]
+      );
+    } else if (hasBiometricHardware && biometricsEnrolled) {
+      // Provides the option to enable if not enabled but supported by the device and data has been entered
+      Alert.alert(
+        i18n.t("enableBiometricsTitle"),
+        i18n.t("enableBiometricsMessage"),
+        [
+          { text: i18n.t("cancel"), onPress: () => {}, style: "cancel" },
+          {
+            text: i18n.t("yes"),
+            onPress: async () => {
+              const authResult = await LocalAuthentication.authenticateAsync({
+                promptMessage: i18n.t("authenticatePrompt"),
+                fallbackLabel: i18n.t("fallbackLabel"),
+                cancelLabel: i18n.t("cancel"),
+              });
+              if (authResult.success) {
+                await AsyncStorage.setItem("biometricsEnabled", "true");
+                setBiometricsEnabled(true);
+                console.log("Biometrics has been enabled."); // Outputs the state after the enable operation
+
+                //setBiometricsEnabled(true);
+                Alert.alert(i18n.t("biometricsEnabledConfirmation"));
+              } else {
+                Alert.alert(
+                  i18n.t("authenticationFailedTitle"),
+                  i18n.t("authenticationFailedMessage")
+                );
+              }
+            },
+          },
+        ]
+      );
+    } else {
+      // Notify the user if data is not supported or not entered
+      Alert.alert(i18n.t("unavailable"), i18n.t("deviceNotSupported"));
     }
   };
 
@@ -115,34 +196,10 @@ const SettingsScreen = ({navigation}) => {
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/ghost.png')} // logo path
+          source={require("../assets/ghost.png")} // logo path
           style={styles.logo}
         />
       </View>
-
-      {/* {!isChangingUsername && (
-        <TouchableOpacity onPress={() => setIsChangingUsername(true)} style={styles.button}>
-          <Text style={styles.buttonText}>{i18n.t("changeusername")}</Text>
-        </TouchableOpacity>
-      )}
-
-      {isChangingUsername && (
-        <View>
-          <TextInput
-            placeholder="New Username"
-            value={newUsername}
-            onChangeText={text => setNewUsername(text)}
-          />
-          <Button
-            title="Submit"
-            onPress={handleChangeUsername}
-          />
-          <Button
-            title="Cancel"
-            onPress={() => setIsChangingUsername(false)}
-          />
-        </View>
-      )} */}
 
       <TouchableOpacity
         style={styles.button}
@@ -188,8 +245,8 @@ const SettingsScreen = ({navigation}) => {
         <Text style={styles.buttonText}>{i18n.t("changelanguage")}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleChangeBiometrics}>
-        <Text style={styles.buttonText}>{biometricsEnabled ? 'Disable Biometrics' : 'Enable Biometrics'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleEnableBiometrics}>
+        <Text style={styles.buttonText}>{i18n.t("biometrics")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
@@ -199,96 +256,9 @@ const SettingsScreen = ({navigation}) => {
       <TouchableOpacity style={styles.button} onPress={handleDeleteAccount}>
         <Text style={styles.buttonText}>{i18n.t("deleteaccount")}</Text>
       </TouchableOpacity>
-
     </View>
   );
-}
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#000',
-//   },
-//   logoContainer: {
-//     alignItems: 'center',
-//     marginVertical: 20,
-//   },
-//   logo: {
-//     width: 100, // Set the width of  logo
-//     height: 100, // Set the height of  logo
-//     resizeMode: 'contain',
-//   },
-//   button: {
-//     backgroundColor: '#515151', // Set background color
-//     paddingVertical: 15,
-//     paddingHorizontal: 10,
-//     marginHorizontal: 20,
-//     borderRadius: 5,
-//     marginTop: 10,
-//     alignItems: 'center',
-//   },
-//   buttonText: {
-//     fontSize: 18,
-//     color: '#fff', // Set  text color
-//   },
-//   footer: {
-//     // Add styles for  footer, it may include icons
-//     position: 'absolute',
-//     bottom: 0,
-//     left: 0,
-//     right: 0,
-//     height: 50,
-//     backgroundColor: '#eaeaea', // Set a background color for the footer
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     alignItems: 'center',
-//   },
-
-
-//   logoContainer: {
-//     alignItems: 'center',
-//     marginVertical: 20,
-//   },
-//   logo: {
-//     width: 100, // Set the width of  logo
-//     height: 100, // Set the height of  logo
-//     resizeMode: 'contain',
-//   },
-//   button: {
-//     backgroundColor: '#f0f0f0', // Set background color
-//     paddingVertical: 15,
-//     paddingHorizontal: 10,
-//     marginHorizontal: 20,
-//     borderRadius: 5,
-//     marginTop: 10,
-//     alignItems: 'center',
-//   },
-//   buttonText: {
-//     fontSize: 18,
-//     color: '#000', // Set  text color
-//   },
-//   footer: {
-//     // Add styles for  footer, it may include icons
-//     position: 'absolute',
-//     bottom: 0,
-//     left: 0,
-//     right: 0,
-//     height: 50,
-//     backgroundColor: '#eaeaea', // Set a background color for the footer
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     alignItems: 'center',
-//   },
-//   navbar: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between', 
-//     alignItems: 'center',
-//     backgroundColor: '#F0F0F0',
-//     width: '100%',
-//     position: 'absolute',
-//     bottom: 0
-//   }
-// });
+};
 
 const styles = StyleSheet.create({
   container: {
