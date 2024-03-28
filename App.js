@@ -5,13 +5,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import HomeScreen from './screens/HomeScreen';
-import ContactScreen from './screens/ContactScreen';
-import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainTabNavigator from './screens/TabNavigator';
 import { LanguageProvider } from "./screens/LanguageProvider";
-import ChatScreen2 from "./screens/ChatScreen2";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -48,7 +44,6 @@ const App = () => {
               <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
               <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
               <Stack.Screen name="Chat" component={ChatScreen} />
-              <Stack.Screen name="Chat2" component={ChatScreen2} />
             </Stack.Navigator>
           </NavigationContainer>
         ) : (
@@ -58,7 +53,6 @@ const App = () => {
               <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
               <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }}/>
               <Stack.Screen name="Chat" component={ChatScreen} />
-              <Stack.Screen name="Chat2" component={ChatScreen2} />
             </Stack.Navigator>
           </NavigationContainer>
         )}
